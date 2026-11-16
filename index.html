@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16r">
+<meta name="opem-build" content="2026-11-16s">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -155,6 +155,14 @@ body[data-rmap="1"] .pin.model svg{display:block}
 .msg{max-width:88%;padding:10px 13px;border-radius:16px;font-size:14.5px;white-space:pre-wrap;overflow-wrap:anywhere}
 .msg.me{align-self:flex-end;background:var(--accent);color:var(--accent-ink);border-bottom-right-radius:5px}
 .msg.ai{align-self:flex-start;background:rgba(255,255,255,.08);border-bottom-left-radius:5px}
+.msg.wait{display:none}
+.msg.typing > :not(.dots){display:none}
+.msg .dots{display:inline-flex;align-items:center;gap:4px;color:var(--muted);font-size:13px}
+.msg .dots span{margin-right:4px}
+.msg .dots i{width:6px;height:6px;border-radius:50%;background:var(--accent);display:block;animation:opdot 1s ease-in-out infinite}
+.msg .dots i:nth-child(3){animation-delay:.15s}
+.msg .dots i:nth-child(4){animation-delay:.3s}
+@keyframes opdot{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-4px);opacity:1}}
 .msg .btn{display:block;margin-top:9px;height:34px;font-size:13px}
 .sugg{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px}
 .sugg button{border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;color:var(--ink)}
@@ -1164,7 +1172,7 @@ function render(){
     d.pin.style.visibility=show?"visible":"hidden";
     if(!show){ d.isMini=undefined; d.isGone=undefined; d.pin.classList.remove("gone"); return; }
     // one dot per spot: a city that would sit on top of another dot stays hidden until you zoom in and they separate
-    var hideW=false, gm=d.isGone===false?11:15; dots.forEach(function(q){ if(Math.abs(p[0]-q[0])<gm&&Math.abs(p[1]-q[1])<gm) hideW=true; });
+    var hideW=false, gm=d.isGone===true?19:15; dots.forEach(function(q){ if(Math.abs(p[0]-q[0])<gm&&Math.abs(p[1]-q[1])<gm) hideW=true; });
     if(!hideW) dots.push(p);
     if(d.isGone===undefined){ d.isGone=hideW; d.goneV=hideW; }
     else if(hideW!==d.isGone){ if(d.goneV!==hideW){ d.goneV=hideW; d.goneT=nowT; } if(still&&nowT-d.goneT>=200) d.isGone=hideW; else pend=true; }
@@ -1822,7 +1830,28 @@ function prompt(){
   "Reply in the traveller's language, in plain text without markdown, warm and direct, at most 90 words.\n\nSample places (id | destination | category | name | area | details):\n"+
   PLACES.map(function(p){return p.id+" | "+p.dest.name+" | "+CATS[p.cat].label+" | "+p.name+" | "+p.area+" | "+p.kind+(p.cat==="stay"?" | NOK "+p.price+" per night":"")+" | "+p.blurb;}).join("\n");
 }
-function bubble(text,who){ var d=document.createElement("div"); d.className="msg "+who; d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; }
+var aiUntil=0;
+function setMsg(el,t){ if(el.reveal&&el.classList.contains("typing")) el.reveal(t); else el.textContent=t; }
+function bubble(text,who){
+  var d=document.createElement("div"); d.className="msg "+who;
+  if(who!=="ai"||reduce){ d.textContent=text; log.appendChild(d); log.scrollTop=log.scrollHeight; return d; }
+  // Opem "writes" first: three dots for a moment, then the text types out
+  var now=performance.now(), start=Math.max(now,aiUntil), hold=/…$/.test(text)&&text.length<40, born=start;
+  d.classList.add("typing"); d.innerHTML='<span class="dots"><span>Opem is writing</span><i></i><i></i><i></i></span><span class="tx"></span>';
+  if(start>now+30){ d.classList.add("wait"); setTimeout(function(){ d.classList.remove("wait"); log.scrollTop=log.scrollHeight; },start-now); }
+  d.reveal=function(t){
+    var wait=Math.max(0,born+650-performance.now());
+    setTimeout(function(){
+      var tx=d.querySelector(".tx"), dots=d.querySelector(".dots"); d.classList.remove("typing","wait"); if(dots) dots.remove();
+      if(!tx){ return; }
+      var n=0, step=Math.max(1,Math.ceil(t.length/55));
+      (function tick(){ n=Math.min(t.length,n+step); tx.textContent=t.slice(0,n); log.scrollTop=log.scrollHeight; if(n<t.length) setTimeout(tick,22); })();
+    },wait);
+  };
+  aiUntil=start+(hold?0:650+Math.min(1300,Math.ceil(text.length/Math.max(1,Math.ceil(text.length/55)))*22)+120);
+  if(!hold) d.reveal(text);
+  log.appendChild(d); log.scrollTop=log.scrollHeight; return d;
+}
 function addShow(el,ids){
   if(!ids.length) return;
   var b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent="Show these on the map";
@@ -1851,7 +1880,7 @@ function send(text){
   text=(text||"").trim(); if(!text||busy) return;
   sugg.hidden=true; bubble(text,"me"); history_.push({role:"user",content:text});
   var el=bubble("Thinking…","ai"), shown=[];
-  function finish(answer,ids){ el.textContent=answer; history_.push({role:"assistant",content:answer}); addShow(el,ids); busy=false; }
+  function finish(answer,ids){ setMsg(el,answer); history_.push({role:"assistant",content:answer}); addShow(el,ids); busy=false; }
   if(!sampleFn){ var d=demoAnswer(text); finish(d.text,d.ids); return; }
   busy=true;
   var start=Math.max(0,history_.length-9); if(history_[start].role!=="user") start++;
@@ -2076,7 +2105,7 @@ function genText(text){
   if(busy) return;
   bubble(text,"me"); chat.prefs=(chat.prefs+" "+text).trim(); setChips([]);
   var el=say("Putting your trip together…");
-  function done(o){ var pl=toPlan(o)||toPlan(heur(chat.prefs)); el.textContent=o.note||"Here is a trip built around what you told me."; renderPlan(pl); afterPlan(); busy=false; }
+  function done(o){ var pl=toPlan(o)||toPlan(heur(chat.prefs)); setMsg(el,o.note||"Here is a trip built around what you told me."); renderPlan(pl); afterPlan(); busy=false; }
   if(!sampleFn) return done(heur(chat.prefs));
   busy=true;
   sampleFn("You are the trip builder inside Opem, a prototype travel app. From the traveller's wishes, choose ONE destination and build a trip. "+
