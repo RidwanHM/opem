@@ -1,7 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16c">
+<meta name="opem-build" content="2026-11-16d">
+<meta name="theme-color" content="#060913">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Opem">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Opem Travel Globe</title>
@@ -176,6 +184,15 @@ body[data-visit] .dock{display:none}
 .jdots span.done{background:var(--accent)}
 .jdots span.now{background:#fff}
 .jshare .btn{flex:1}
+.jtools{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.seg{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden}
+.seg button{height:32px;padding:0 14px;font-size:13px;font-weight:600;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink)}
+.jf{display:flex;flex-direction:column;gap:5px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);flex:1;min-width:0}
+.jf input,.jf select,.jf textarea{border:1px solid var(--line);border-radius:12px;background:rgba(255,255,255,.05);color:var(--ink);padding:10px 12px;font:inherit;font-size:16px;font-weight:500;letter-spacing:0;text-transform:none;width:100%;resize:vertical}
+.jf select option{color:#111}
+.jedit{display:flex;flex-direction:column;gap:10px}
+.jrow2{display:flex;gap:10px}
 .jshare .btn{padding:0 8px;font-size:13.5px}
 .jvid{width:62%;margin:0 auto;display:block;border-radius:16px;border:1px solid var(--line);background:#060913}
 .jlink{width:100%;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);padding:0 12px;font:inherit;font-size:13px}
@@ -210,7 +227,16 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .opreply button{flex:none;width:26px;height:26px;border-radius:50%;font-size:17px;line-height:1;color:var(--muted)}
 #opemReply{order:0}
 #countryMatches{order:1}
-.listbtn{order:2;align-self:flex-start;height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
+.vbtns{order:2;display:flex;gap:8px;flex-wrap:wrap}
+.statsbox{display:none;order:3;grid-template-columns:1fr 1fr;gap:8px}
+.visit.show-stats .statsbox{display:grid}
+.visit.show-stats .vsum,.visit.show-stats .conts,.visit.show-stats #visitHint,.visit.show-stats #visitCard{display:none}
+.stat{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:rgba(255,255,255,.04);min-width:0}
+.stat b{display:block;font-family:var(--display);font-size:19px;overflow-wrap:anywhere}
+.stat small{display:block;color:var(--muted);font-size:12px;margin-top:2px}
+.stat.wide{grid-column:1 / -1}
+.stat.wide b{font-size:15px}
+.listbtn{height:32px;padding:0 12px;border-radius:999px;border:1px solid var(--line);font-size:13px;font-weight:600;display:inline-flex;align-items:center;gap:7px}
 .listbtn::after{content:"";width:7px;height:7px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(45deg) translateY(-2px)}
 .listbtn[aria-expanded="true"]{border-color:var(--accent);color:var(--accent)}
 .listbtn[aria-expanded="true"]::after{transform:rotate(-135deg) translateY(-2px)}
@@ -396,7 +422,8 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
         </form>
         <div class="opreply" id="opemReply" hidden><p id="opemText"></p><button type="button" id="opemHide" aria-label="Hide Opem's reply">&times;</button></div>
         <div class="sugg-list" id="countryMatches"></div>
-        <button class="listbtn" type="button" id="listBtn" aria-expanded="false" aria-controls="visitedChips"></button>
+        <div class="vbtns"><button class="listbtn" type="button" id="listBtn" aria-expanded="false" aria-controls="visitedChips"></button><button class="listbtn" type="button" id="statsBtn" aria-expanded="false" aria-controls="statsBox">My stats</button></div>
+        <div class="statsbox" id="statsBox"></div>
       </div>
       <div class="stack" id="journeyBox">
         <form class="opbar" id="jBar" autocomplete="off">
@@ -1512,7 +1539,27 @@ function showMatches(){
   list.forEach(function(n){ var b=document.createElement("button"); b.type="button"; b.textContent="+ "+n; b.onclick=function(){ addCountry(n); }; countryMatches.appendChild(b); });
   if(q.trim()&&!list.length&&worldState==="ok"){ var p=document.createElement("p"); p.className="note"; p.textContent="No match. Very small countries are not on this map yet."; countryMatches.appendChild(p); }
 }
-function setList(on){ visitEl.classList.toggle("show-list",!!on); document.getElementById("listBtn").setAttribute("aria-expanded",String(!!on)); if(on) visitEl.scrollTop=0; }
+function setStats(on){
+  visitEl.classList.toggle("show-stats",!!on); document.getElementById("statsBtn").setAttribute("aria-expanded",String(!!on));
+  if(on){ visitEl.classList.remove("show-list"); document.getElementById("listBtn").setAttribute("aria-expanded","false"); renderStats(); visitEl.scrollTop=0; }
+}
+function renderStats(){
+  var box=document.getElementById("statsBox"), OSLO=[10.75,59.91], known=countries.filter(function(c){return c.f;}), got=known.filter(function(c){return visited.indexOf(c.name)>=0;});
+  var conts={}, js=typeof journeys!=="undefined"?journeys:[], km=0, days=0, longest=null, far=null, cities={};
+  got.forEach(function(c){ conts[c.f.cont]=1; });
+  js.forEach(function(j){ km+=+j.km||0; if(!longest||j.km>longest.km) longest=j; j.stops.forEach(function(x){ days+=+x.days||0; cities[x.name]=1; var d=d3.geoDistance(OSLO,x.ll)*6371; if(!far||d>far.d) far={n:x.name,d:d}; }); });
+  TRIPS.forEach(function(t){ cities[t.name]=1; var d=d3.geoDistance(OSLO,t.ll)*6371; if(!far||d>far.d) far={n:t.name,d:d}; });
+  var best=null; Object.keys(CONTNAME).forEach(function(k){ var all=known.filter(function(c){return c.f.cont===k;}), g=all.filter(function(c){return visited.indexOf(c.name)>=0;}); if(g.length&&g.length<all.length&&(!best||g.length>best.g)) best={k:k,g:g.length,all:all}; });
+  var next=null; if(best){ best.all.forEach(function(c){ if(visited.indexOf(c.name)<0&&(!next||c.f.pop>next.f.pop)) next=c; }); }
+  function st(v,l,w){ return '<div class="stat'+(w?" wide":"")+'"><b>'+esc(v)+"</b><small>"+esc(l)+"</small></div>"; }
+  box.innerHTML=st(got.length+" of "+known.length,"countries visited")+st(Object.keys(conts).length+" of "+Object.keys(CONTNAME).length,"continents")+
+    st(Object.keys(cities).length,"cities and places in your trips")+st(js.length,js.length===1?"journey":"journeys")+
+    st(kr(km)+" km","travelled on journeys")+st((km/40075).toFixed(2)+" ×","around the Earth")+
+    (days?st(days+" days","on the road in journeys"):"")+(far?st(far.n,"farthest from Oslo · "+kr(Math.round(far.d/10)*10)+" km"):"")+
+    (longest?st(longest.title,"longest journey · about "+kr(longest.km)+" km",true):"")+
+    (next?st((next.f?flagOf(next.f)+" ":"")+next.name,"Opem suggests next: you have "+best.g+" of "+best.all.length+" in "+CONTNAME[best.k],true):"");
+}
+function setList(on){ if(on) setStats(false); visitEl.classList.toggle("show-list",!!on); document.getElementById("listBtn").setAttribute("aria-expanded",String(!!on)); if(on) visitEl.scrollTop=0; }
 function renderChips(){
   visitedChips.innerHTML="";
   var sc=vSel.cont, list=visited.filter(function(n){ if(!sc) return true; var c=countryByName(n); return !!(c&&c.f&&c.f.cont===sc); });
@@ -1533,6 +1580,7 @@ function syncVisited(){
     worldState==="loading"?"Loading the country outlines…":"Type a country to add it, or tap it on the globe.";
   countryInput.disabled=worldState!=="ok";
   countryInput.placeholder=worldState==="ok"?"Tell Opem where you've been":worldState==="loading"?"Loading the country outlines…":"Country outlines did not load. Reload the page.";
+  if(visitEl.classList.contains("show-stats")) renderStats();
   try{ localStorage.setItem("opem.visited",JSON.stringify(visited)); }catch(e){}
   syncVisit(); if(state.plans) syncTrips();
   draw();
@@ -1614,6 +1662,7 @@ function opemAsk(text){
 document.getElementById("opemBar").addEventListener("submit",function(e){ e.preventDefault(); opemAsk(countryInput.value); });
 document.getElementById("opemHide").addEventListener("click",function(){ opemReply.hidden=true; });
 document.getElementById("listBtn").addEventListener("click",function(){ setList(!visitEl.classList.contains("show-list")); });
+document.getElementById("statsBtn").addEventListener("click",function(){ setStats(!visitEl.classList.contains("show-stats")); });
 syncVisited();
 
 /* ---------- chat ---------- */
@@ -2169,7 +2218,7 @@ function openJDetail(j){
     (cs.length?'<h3>Countries</h3><div class="jchips">'+cs.map(function(n){return "<span>"+esc(n)+"</span>";}).join("")+"</div>":"")+
     '<h3>Cities and places</h3><div class="jchips">'+j.stops.map(function(x){return "<span>"+esc(x.name)+"</span>";}).join("")+"</div></div>"+
     '<div class="sec"><h2>Day by day</h2>'+(j.example?'<span class="ex">Example data</span>':"")+"</div>";
-  h=h.replace('<div class="sec"><h2>Day by day</h2>','<div class="actions jshare">'+(j.shared?'<button class="btn primary" type="button" id="jKeep">Save to my trips</button>':'<button class="btn" type="button" id="jShareLink">Share link</button><button class="btn" type="button" id="jSharePic">Share picture</button><button class="btn" type="button" id="jShareVid">Share video</button>')+'</div><div class="stack" id="jShareOut" hidden></div><div class="sec"><h2>Day by day</h2>');
+  h=h.replace('<div class="sec"><h2>Day by day</h2>','<div class="actions jshare">'+(j.shared?'<button class="btn primary" type="button" id="jKeep">Save to my trips</button>':'<button class="btn" type="button" id="jShareLink">Share link</button><button class="btn" type="button" id="jSharePic">Share picture</button><button class="btn" type="button" id="jShareVid">Share video</button>')+'</div>'+(j.shared?'':'<div class="jtools"><button class="listbtn plain" type="button" id="jEdit">Edit journey</button><span class="seg" role="group" aria-label="Traveller"><button type="button" data-kid="boy" aria-pressed="'+(kidStyle==="boy")+'">Boy</button><button type="button" data-kid="girl" aria-pressed="'+(kidStyle==="girl")+'">Girl</button></span></div>')+'<div class="stack" id="jShareOut" hidden></div><div class="sec"><h2>Day by day</h2>');
   if(j.shared) h=h.replace('<span class="dot"></span>Journey','<span class="dot"></span>Shared journey');
   var day=1;
   j.stops.forEach(function(x,i){
@@ -2184,7 +2233,27 @@ function openJDetail(j){
   document.getElementById("jBack").onclick=closeJDetail;
   document.getElementById("jSim").onclick=function(){ startJourney(j); };
   if(j.shared) document.getElementById("jKeep").onclick=function(){ delete j.shared; journeys.unshift(j); saveJourneys(); syncTrips(); openJDetail(j); };
-  else { document.getElementById("jShareLink").onclick=function(){ shareLink(j); }; document.getElementById("jSharePic").onclick=function(){ sharePicture(j); }; document.getElementById("jShareVid").onclick=function(){ shareVideo(j); }; }
+  else { document.getElementById("jShareLink").onclick=function(){ shareLink(j); }; document.getElementById("jSharePic").onclick=function(){ sharePicture(j); }; document.getElementById("jShareVid").onclick=function(){ shareVideo(j); };
+    document.getElementById("jEdit").onclick=function(){ editJourney(j); };
+    Array.prototype.forEach.call(jDetail.querySelectorAll("[data-kid]"),function(b){ b.onclick=function(){ kidStyle=b.getAttribute("data-kid"); try{ localStorage.setItem("opem.kid",kidStyle); }catch(e){} openJDetail(j); }; }); }
+}
+function editJourney(j){
+  var h='<button class="jback" type="button" id="jeCancel">&#8592; Back without saving</button><div class="sec"><h2>Edit journey</h2></div><label class="jf">Title<input id="jeTitle" type="text" maxlength="80" value="'+esc(j.title)+'"></label>';
+  j.stops.forEach(function(x,i){
+    h+='<div class="jbox jedit"><b>'+(i+1)+" · "+esc(x.name)+'</b><div class="jrow2"><label class="jf">Days<input type="number" min="0" max="365" inputmode="numeric" data-f="days" data-i="'+i+'" value="'+(+x.days||0)+'"></label>'+
+      (i?'<label class="jf">Arrived<select data-f="by" data-i="'+i+'">'+Object.keys(MODES).map(function(m){ return '<option value="'+m+'"'+(x.by===m?" selected":"")+">"+MODES[m]+"</option>"; }).join("")+"</select></label>":"")+
+      '</div><label class="jf">What you did<textarea rows="3" maxlength="300" data-f="did" data-i="'+i+'">'+esc(x.did||"")+"</textarea></label></div>";
+  });
+  h+='<div class="jsim"><button class="btn primary" type="button" id="jeSave">Save changes</button></div>';
+  jDetail.innerHTML=h; jDetail.parentNode.scrollTop=0;
+  document.getElementById("jeCancel").onclick=function(){ openJDetail(j); };
+  document.getElementById("jeSave").onclick=function(){
+    var t=document.getElementById("jeTitle").value.trim(); if(t) j.title=t.slice(0,80);
+    Array.prototype.forEach.call(jDetail.querySelectorAll("[data-f]"),function(el){ var x=j.stops[+el.getAttribute("data-i")], f=el.getAttribute("data-f");
+      if(f==="days") x.days=clamp(Math.round(+el.value)||0,0,365); else if(f==="by"){ if(MODES[el.value]) x.by=el.value; } else x.did=el.value.trim().slice(0,300); });
+    var km=0; for(var i=1;i<j.stops.length;i++) km+=legKm(j.stops[i-1],j.stops[i]); j.km=Math.round(km/10)*10; delete j.example;
+    saveJourneys(); syncTrips(); openJDetail(j);
+  };
 }
 function saveJourneys(){ try{ localStorage.setItem("opem.journeys",JSON.stringify(journeys)); }catch(e){} }
 function legKm(a,b){ return d3.geoDistance(a.ll,b.ll)*6371; }
@@ -2228,6 +2297,7 @@ function parseJourney(text){
 }
 
 /* --- the traveller: one small figure, a different outfit per country --- */
+var kidStyle="boy"; try{ if(localStorage.getItem("opem.kid")==="girl") kidStyle="girl"; }catch(e){}
 function drawKid(g,x,y,s,cos,t,flag){
   var skin="#f0c08c", bob=Math.sin(t/260)*1.2, wave=Math.sin(t/300)*2.2, hx=17, hy=-38+wave;
   function rect(a,b,w,h,c){ g.fillStyle=c; g.fillRect(a,b,w,h); }
@@ -2283,8 +2353,11 @@ function drawKid(g,x,y,s,cos,t,flag){
   if(cos==="tourist"){ line([-6,-40,-6,-18],"#8a5a2a",2); line([6,-40,6,-18],"#8a5a2a",2); }
   // head
   if(cos==="gulf"){ rr(-14.5,-64,29,27,9,"#fbfaf5"); }
+  var girl=kidStyle==="girl"&&cos!=="gulf"&&cos!=="guard"&&cos!=="egypt";
+  if(girl){ rr(-15.5,-58,7,25,3.4,"#4a2f1c"); rr(8.5,-58,7,25,3.4,"#4a2f1c"); }
   ell(-11.5,-51,2.2,2.8,skin); ell(11.5,-51,2.2,2.8,skin);
   ell(0,-52,12,12,skin);
+  if(girl){ line([-3.2,-54.6,-5.4,-55.6],"#2a1c12",.9); line([3.2,-54.6,5.4,-55.6],"#2a1c12",.9); }
   if(cos!=="gulf"&&cos!=="guard"){ g.beginPath(); g.arc(0,-54,12.2,Math.PI*1.03,Math.PI*1.97); g.closePath(); g.fillStyle="#4a2f1c"; g.fill(); }
   ell(-4.2,-52,1.5,1.7,"#2a1c12"); ell(4.2,-52,1.5,1.7,"#2a1c12"); ell(-7.5,-48.5,2.2,1.4,"rgba(232,120,110,.45)"); ell(7.5,-48.5,2.2,1.4,"rgba(232,120,110,.45)");
   g.beginPath(); g.arc(0,-49.5,4.6,.18*Math.PI,.82*Math.PI); g.strokeStyle="#7a3a2a"; g.lineWidth=1.3; g.lineCap="round"; g.stroke();
