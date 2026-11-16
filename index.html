@@ -47,7 +47,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .app{position:relative;height:100%;overflow:hidden}
 #map{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;cursor:grab}
 #map.dragging{cursor:grabbing}
-#pins{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+#pins{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;isolation:isolate}
 
 /* top bar */
 .top{position:absolute;top:0;left:0;right:0;padding:14px 16px 0;display:flex;flex-direction:column;gap:10px;pointer-events:none}
