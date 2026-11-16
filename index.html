@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16s">
+<meta name="opem-build" content="2026-11-16t">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1827,6 +1827,7 @@ function prompt(){
   "For specific recommendations use only the sample places listed below, and call the show_on_map tool with their ids (one destination at a time) whenever you recommend any. "+
   (chat.plan?"The traveller's current trip plan is: "+planText(chat.plan)+" ":"")+
   "Prices and ratings are sample data and booking is not live yet; say so if asked to book. General travel knowledge about these places is welcome. "+
+  "Your personality: upbeat, a little playful, confident, like a well-travelled friend. React to what they asked before answering (\"Oh yes, Spain has a lot going for it\"), give two or three concrete examples with the vibe of each, and end with one short question or an offer to plan it. Never repeat an earlier answer word for word. If they ask you to plan or book, say you will put the trip together and tell them to say \"plan <city>\". "+
   "Reply in the traveller's language, in plain text without markdown, warm and direct, at most 90 words.\n\nSample places (id | destination | category | name | area | details):\n"+
   PLACES.map(function(p){return p.id+" | "+p.dest.name+" | "+CATS[p.cat].label+" | "+p.name+" | "+p.area+" | "+p.kind+(p.cat==="stay"?" | NOK "+p.price+" per night":"")+" | "+p.blurb;}).join("\n");
 }
@@ -1860,28 +1861,90 @@ function addShow(el,ids){
 }
 function top(d,cat,n){ return d.places.filter(function(p){return p.cat===cat;}).sort(function(a,b){return b.rating-a.rating;}).slice(0,n); }
 function list(ps){ return ps.map(function(p){return p.name+" ("+p.area+")";}).join(", "); }
+/* ---------- Opem's built-in voice: used when no AI model is connected ---------- */
+var VIBES_OF={};
+("phuket|bpw$|beaches, island hopping and loud nights in Patong;barcelona|bpfc|Gaudí, tapas and a beach at the end of the metro line;oslo|cn|fjord saunas, forests and museums, all within a tram ride;bali|bnrw$|rice terraces, temples, surf and smoothie bowls;zanzibar|brw|spice markets, dhows and white sand;marrakech|cf$|souks, riads and rooftop mint tea;dubai|lsbw|skyscrapers, desert dunes and big shopping;"+
+"paris|cfr|art, long café afternoons and a lot of romance;london|csf|free museums, markets, pubs and theatre;rome|cfr|ancient ruins on every corner and very good pasta;newyork|sfc|skyline views, Broadway and food from everywhere;tokyo|fsc|neon, temples and the best food city on earth;bangkok|fp$w|temples, street food and rooftop bars;istanbul|cf$|bazaars, mosques and ferries between two continents;singapore|fsl|hawker food, gardens and a spotless skyline;amsterdam|cp|canals, bikes and world-class museums;lisbon|f$cr|trams, tiled hills and custard tarts;losangeles|bs|beaches, Hollywood and tacos;capetown|bna|Table Mountain, penguins and vineyards;sydney|bn|harbour views, surf beaches and brunch;rio|bpn|beaches, samba and mountains in the middle of the city;prague|c$p|fairy-tale streets and cheap, excellent beer;athens|c$f|the Acropolis above a city of rooftop tavernas;berlin|pc$|history, street art and clubs that never close;vienna|cr|palaces, coffee houses and classical music;cairo|c$a|the pyramids and a huge, buzzing city;mexicocity|fc$|tacos, murals and Aztec history;"+
+"venice|rc|canals, gondolas and getting happily lost;florence|crf|Renaissance art and Tuscan food;madrid|pfc|late dinners, big museums and even later nights;seville|cr$|flamenco, orange trees and Moorish palaces;dublin|p|pubs, live music and good stories;edinburgh|cn|a castle on a rock and moody hills;copenhagen|fc|design, bikes and great bakeries;stockholm|cn|islands, old town lanes and fika;budapest|p$c|thermal baths and ruin bars;krakow|c$|a medieval square and very friendly prices;santorini|rbl|white villages and famous sunsets;dubrovnik|bc|old city walls above a clear blue sea;reykjavik|na|hot springs, waterfalls and northern lights;sanfrancisco|cnf|the Golden Gate, hills and sourdough;lasvegas|pl|shows, casinos and the Grand Canyon nearby;miami|bpw|art deco, beach clubs and Cuban coffee;toronto|sf|a big friendly city with Niagara next door;vancouver|na|mountains and ocean in one view;cancun|bpw|Caribbean beaches, cenotes and Maya ruins;havana|cpw$|classic cars, music and faded grandeur;buenosaires|fp$|steak, tango and late nights;cusco|ac$|the gateway to Machu Picchu;hongkong|sf|skyline, dim sum and island hikes;seoul|sfp|palaces, K-culture and barbecue;kyoto|cr|temples, geisha streets and gardens;beijing|c|the Great Wall and the Forbidden City;shanghai|sf|a futuristic skyline and soup dumplings;hanoi|f$c|street food, scooters and Ha Long Bay;kualalumpur|f$s|twin towers, caves and cheap great food;delhi|c$f|Mughal forts, markets and spice;"+
+"nairobi|na|safari on the edge of a city;johannesburg|c|history, art and a gateway to Kruger;luxor|c$w|temples and royal tombs along the Nile;fes|c$|the world's biggest medieval maze;tunis|cb$|blue-and-white villages and Roman ruins;dakar|b$|surf, music and island day trips;accra|b$p|beaches, markets and nightlife;addisababa|c$|coffee, history and the high plateau;victoriafalls|an|one of the biggest waterfalls on earth;mauritius|blrw|lagoons, mountains and Creole food;osaka|fp|Japan's kitchen and its funniest city;taipei|f$|night markets and mountain hikes;hochiminh|f$p|scooters, coffee and rooftop bars;siemreap|c$a|sunrise at Angkor Wat;mumbai|fc$|Bollywood, street food and sea breezes;agra|c$r|the Taj Mahal at sunrise;kathmandu|a$c|temples and the road to Everest;maldives|blrw|overwater villas and manta rays;doha|ls|museums, souks and desert;chiangmai|c$n|temples, mountains and night markets")
+ .split(";").forEach(function(r){ var a=r.split("|"); VIBES_OF[a[0]]={t:a[1],p:a[2]}; });
+var COUNTRY_ALIAS={spania:"spain",italia:"italy",frankrike:"france",hellas:"greece",tyskland:"germany",norge:"norway",sverige:"sweden",danmark:"denmark",storbritannia:"united kingdom",england:"united kingdom",britain:"united kingdom",uk:"united kingdom",scotland:"united kingdom",usa:"united states",america:"united states",amerika:"united states",states:"united states",tyrkia:"türkiye",turkey:"türkiye",emirates:"uae",marokko:"morocco",egypt:"egypt",kina:"china",india:"india",japan:"japan",thailand:"thailand",brasil:"brazil",mexico:"mexico",sorafrika:"south africa","sør-afrika":"south africa",korea:"south korea",vietnam:"vietnam",irland:"ireland",osterrike:"austria","østerrike":"austria",ungarn:"hungary",polen:"poland",kroatia:"croatia",island:"iceland",tsjekkia:"czechia"};
+var TAGWORDS=[["b",/beach|strand|sun|sol\b|swim|bade|coast|island|øy|sea\b/,"beaches"],["p",/party|fest|nightlife|uteliv|club|klubb|bars?\b/,"nightlife"],["f",/food|eat|mat\b|spise|restaurant|cuisine|foodie/,"food"],["c",/culture|kultur|history|histor|museum|art\b|kunst|architecture|old town/,"culture and history"],
+ ["n",/nature|natur|hike|hiking|fjell|mountain|wildlife|safari|outdoor/,"nature"],["$",/cheap|billig|budget|budsjett|afford|low cost|rimelig/,"a small budget"],["l",/luxur|luksus|fancy|5 star|five star|splurge/,"luxury"],["r",/romantic|romantisk|honeymoon|bryllupsreise|couple|kjæreste|anniversary/,"romance"],
+ ["w",/warm|varm|winter sun|vintersol|hot\b|escape the cold|sunny in (dec|jan|feb|nov)/,"winter sun"],["a",/adventure|eventyr|adrenaline|trek|explor/,"adventure"],["s",/shopping|shop\b|big city|storby|skyline/,"big-city energy"]];
+var brain={last:null,lastDest:null,n:0};
+function lc1(t){ return t.charAt(0).toLowerCase()+t.slice(1); }
+function rnd1(a){ var i=Math.floor(Math.random()*a.length); if(a.length>1&&a[i]===brain.last) i=(i+1)%a.length; brain.last=a[i]; return a[i]; }
+function cityLine(d){ var v=VIBES_OF[d.id]; return d.name+(v?" for "+v.p:""); }
+function joinAnd(a){ return a.length<2?a.join(""):a.slice(0,-1).join(", ")+" and "+a[a.length-1]; }
+function stayAvg(d){ var s=d.places.filter(function(p){return p.cat==="stay";}).map(function(p){return p.price;}).sort(function(a,b){return a-b;}); return s[Math.floor(s.length/2)]||0; }
+function costLine(d,n,pax){ n=n||5; pax=pax||2; var f=flights("Oslo",d,false), fp=f.length?Math.min.apply(null,f.map(function(x){return x.price;})):0, st=stayAvg(d);
+  return "Rough numbers from Oslo for "+pax+" people and "+n+" nights: flights from about NOK "+kr(fp*2)+" each return, and a mid-range stay around NOK "+kr(st)+" a night, so roughly NOK "+kr(Math.round((fp*2*pax+st*n)/100)*100)+" before food and fun. Sample prices, mind you."; }
+function findDests(s){ return DESTS.filter(function(d){ return new RegExp("(^|[^a-zæøå])"+d.name.toLowerCase().replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"([^a-zæøå]|$)").test(s); }); }
+function findCountry(s){
+  var names={}; DESTS.forEach(function(d){ names[d.country.toLowerCase()]=1; });
+  var hit=Object.keys(names).filter(function(c){ return s.indexOf(c)>=0; })[0];
+  if(!hit) Object.keys(COUNTRY_ALIAS).some(function(k){ if(new RegExp("(^|[^a-zæøå])"+k+"([^a-zæøå]|$)").test(s)){ hit=COUNTRY_ALIAS[k]; return true; } return false; });
+  return hit&&names[hit]?hit:null;
+}
 function demoAnswer(q){
-  var s=q.toLowerCase();
-  var m=PLACES.filter(function(p){return s.indexOf(p.name.toLowerCase())>=0;})[0];
-  if(m){
-    var near=m.dest.places.filter(function(p){return p.id!==m.id&&p.cat!==m.cat;}).sort(function(a,b){return d3.geoDistance(a.ll,m.ll)-d3.geoDistance(b.ll,m.ll);}).slice(0,2);
-    return {text:m.name+" in "+m.area+", "+m.dest.name+": "+m.blurb+" Close by: "+list(near)+".",ids:[m.id].concat(near.map(function(p){return p.id;}))};
+  var s=" "+q.toLowerCase().replace(/[?!.,]/g," ")+" ", out={text:"",ids:[],chips:[]}, named=findDests(s), d=named[0]||null, country=findCountry(s);
+  var wantPlan=/\b(plan|planlegg|book|bestill|booking|organi[sz]e|set up|fix|arrange|ordne|lag en tur|make (me )?a trip|take me|let'?s go|la oss dra)\b/.test(s);
+  var tags=TAGWORDS.filter(function(t){ return t[1].test(s); });
+  var cat=/party|night|club|bar\b|drink|fest|uteliv/.test(s)?"night":/\beat|food|restaurant|dinner|lunch|seafood|\bmat\b|spise/.test(s)?"eat":/stay|hotel|apartment|sleep|villa|airbnb|\bbo\b|overnatt|hostel/.test(s)?"stay":/\bsee\b|sight|attraction|museum|things to do|gjøre|\bse\b|landmark|visit/.test(s)?"do":null;
+  var cont=/\beurop/.test(s)?"Europe":/\basia\b|\basia/.test(s)?"Asia":/\bafri[ck]a/.test(s)?"Africa":/south america|sør-amerika|latin/.test(s)?"South America":/north america|nord-amerika/.test(s)?"North America":/oceania|australia/.test(s)?"Oceania":null;
+  function planChips(x){ return [{label:"Plan "+x.name+" for me",say:"Plan a trip to "+x.name},{label:"What does "+x.name+" cost?",say:"How much is a trip to "+x.name+"?"},{label:"Show me "+x.name,go:x}]; }
+  brain.n++;
+  // a specific place by name
+  var m=PLACES.filter(function(p){ return p.name.length>5&&s.indexOf(p.name.toLowerCase())>=0; })[0];
+  if(m&&!wantPlan){ var near=m.dest.places.filter(function(p){return p.id!==m.id&&p.cat!==m.cat;}).sort(function(a,b){return d3.geoDistance(a.ll,m.ll)-d3.geoDistance(b.ll,m.ll);}).slice(0,2); brain.lastDest=m.dest;
+    out.text=rnd1(["Good pick. ","Oh, nice one. ","I like that one. "])+m.name+" in "+m.area+", "+m.dest.name+": "+m.blurb+" While you're there, "+list(near)+" are close by."; out.ids=[m.id].concat(near.map(function(p){return p.id;})); return out; }
+  // small talk
+  if(!d&&!country&&!tags.length&&!cont&&!wantPlan&&!cat){
+    if(/\b(hi|hey|hello|hei|hallo|heisann|yo|sup|good (morning|evening))\b/.test(s)){ out.text=rnd1(["Hey! Opem here. Where are we dreaming of going today?","Hi there! Got a place in mind, or should I throw some ideas at you?","Hey hey. Beach, city or mountains: what's the mood?"]); out.chips=[{label:"Somewhere warm",say:"Where is warm right now?"},{label:"A cheap city break",say:"A cheap city break in Europe"},{label:"Surprise me",say:"Surprise me with an idea"}]; return out; }
+    if(/who are you|what are you|hvem er du|what can you do|hva kan du|help\b|hjelp/.test(s)){ out.text="I'm Opem, your travel companion. Ask me where to go, what a city is like, what it costs, or just say \"plan Rome for 4 nights\" and I'll put flights, a stay and the days together. I know "+DESTS.length+" cities so far."; out.chips=[{label:"Where is good in Spain?",say:"Where is good in Spain?"},{label:"Plan a weekend in Paris",say:"Plan a weekend in Paris"}]; return out; }
+    if(/thank|takk|cheers|nice|cool|great|awesome|bra\b|perfect|perfekt/.test(s)){ out.text=rnd1(["Anytime. Want me to turn that into a real plan?","Happy to help! Say the word and I'll plan it properly.","You're welcome. Where to next?"]); return out; }
+    if(/surprise|overrask|random|idea|idé|don'?t know|vet ikke|anywhere|inspire/.test(s)){ var pick=DESTS[Math.floor(Math.random()*DESTS.length)]; brain.lastDest=pick; out.text=rnd1(["Okay, wild card: ","Here's one you might not expect: ","Let me spin my own little globe... "])+cityLine(pick)+". Best time is "+lc1(pick.facts[0][1])+". Sound tempting?"; out.chips=planChips(pick).concat([{label:"Another idea",say:"Surprise me with another idea"}]); return out; }
   }
-  var d=DESTS.filter(function(x){return s.indexOf(x.name.toLowerCase())>=0;})[0]||state.dest, pre="";
-  if(!d){ d=DESTS[0]; pre=NAMES+" are open. Starting with "+d.name+": "; }
-  var cat=/party|night|club|bar|drink|fest|uteliv/.test(s)?"night":/eat|food|restaurant|dinner|lunch|seafood|mat|spise/.test(s)?"eat":/stay|hotel|apartment|sleep|villa|airbnb|book|bo |overnatt/.test(s)?"stay":/see|sight|attraction|museum|beach|things to do|gjøre|se /.test(s)?"do":null;
-  var ps,text;
-  if(cat){ ps=top(d,cat,3); text=pre+"My "+CATS[cat].label.toLowerCase()+" picks in "+d.name+": "+list(ps)+". "+ps[0].name+": "+ps[0].blurb+(cat==="stay"?" Booking is not live in this prototype yet.":""); }
-  else{ var a=top(d,"do",2), e=top(d,"eat",1), n=top(d,"night",1), st=top(d,"stay",1); ps=a.concat(e,n,st);
-    text=pre+"A simple plan for "+d.name+": start with "+a[0].name+" and "+a[1].name+", eat at "+e[0].name+", and end the evening at "+n[0].name+". A good base is "+st[0].name+" in "+st[0].area+"."; }
-  return {text:text,ids:ps.map(function(p){return p.id;})};
+  // "there" / follow-up questions use the last city we talked about
+  if(!d&&!country&&!cont&&(cat||wantPlan||/\bthere\b|\bdit\b|\bder\b|\bit\b|how much|cost|pris|price|when|når|weather|vær/.test(s))) d=brain.lastDest||state.dest||null;
+  // a country: list the cities there, each with its vibe
+  if(country&&!d){ var cs=DESTS.filter(function(x){ return x.country.toLowerCase()===country; }); if(cs.length){ brain.lastDest=cs[0]; var cn=cs[0].country;
+    out.text=rnd1(["Oh yes, "+cn+" has a lot going for it. ","Yeah, "+cn+" is a great shout. ",cn+"? Easy to love. "])+(cs.length>1?"I'd look at "+joinAnd(cs.slice(0,4).map(cityLine))+". ":"My pick there is "+cityLine(cs[0])+". ")+
+      (cs.length>1?rnd1(["Which mood are you in?","Tell me the vibe you want and I'll narrow it down.","Want me to plan one of them?"]):"Want me to plan it?");
+    out.chips=cs.slice(0,3).map(function(x){ return {label:"Plan "+x.name,say:"Plan a trip to "+x.name}; }); out.ids=[]; return out; } }
+  // a vibe or a continent with no city: suggest matches
+  if(!d&&(tags.length||cont)){
+    var pool=DESTS.filter(function(x){ var v=VIBES_OF[x.id]; return (!cont||x.cont===cont||CONT[x.id]===cont)&&tags.every(function(t){ return v&&v.t.indexOf(t[0])>=0; }); });
+    if(!pool.length&&tags.length) pool=DESTS.filter(function(x){ var v=VIBES_OF[x.id]; return (!cont||CONT[x.id]===cont)&&v&&v.t.indexOf(tags[0][0])>=0; });
+    if(pool.length){ pool=pool.sort(function(){ return Math.random()-.5; }).slice(0,3); brain.lastDest=pool[0];
+      out.text=rnd1(["Got it: ","Ooh, I have ideas. ","Right, here's what I'd do. "])+(tags.length?"For "+joinAnd(tags.map(function(t){return t[2];}))+(cont?" in "+cont:"")+", ":"In "+cont+", ")+"look at "+joinAnd(pool.map(cityLine))+". "+rnd1(["Any of those calling your name?","Want me to plan one?","I can compare prices if that helps."]);
+      out.chips=pool.map(function(x){ return {label:"Plan "+x.name,say:"Plan a trip to "+x.name}; }); return out; } }
+  // comparing two cities
+  if(named.length>=2&&/\bor\b|\bvs\b|eller|compare|sammenlign|better|bedre/.test(s)){ var a=named[0], b=named[1], pa=stayAvg(a), pb=stayAvg(b); brain.lastDest=a;
+    out.text="Tough one! "+cityLine(a)+"; "+cityLine(b)+". On price, a mid-range night is about NOK "+kr(pa)+" in "+a.name+" and NOK "+kr(pb)+" in "+b.name+", so "+(pa===pb?"there's nothing in it on price":(pa<pb?a.name:b.name)+" is easier on the wallet")+". If it were me: "+rnd1([a.name+" if you want it lively, "+b.name+" if you want it slower.","go with the one whose food you're craving. Honestly."])+" Sample prices, of course.";
+    out.chips=[{label:"Plan "+a.name,say:"Plan a trip to "+a.name},{label:"Plan "+b.name,say:"Plan a trip to "+b.name}]; return out; }
+  if(d){ brain.lastDest=d; var v=VIBES_OF[d.id];
+    // plan or book: hand over to the trip builder
+    if(wantPlan){ out.text=rnd1(["On it. ","Love it, let's do this. ","Say no more. "])+"I'll put "+d.name+" together: flights, a place to stay and what to do each day."+(/book|bestill/.test(s)?" I can't take payment in this prototype yet, so think of it as everything ready to book.":""); out.plan=q+(named.length?"":" "+d.name); return out; }
+    if(/how much|cost|price|pris|koster|expensive|dyrt|budget|budsjett/.test(s)){ out.text=costLine(d)+" Want me to build the full trip?"; out.chips=planChips(d).slice(0,1); return out; }
+    if(/when|når|weather|vær|season|sesong|best time|month|måned/.test(s)){ out.text=d.name+" is at its best "+lc1(d.facts[0][1])+", with temperatures around "+d.facts[1][1]+". "+rnd1(["Outside that it still works, just pack smarter.","That's when I'd go."]); out.chips=planChips(d).slice(0,2); return out; }
+    if(cat){ var ps=top(d,cat,3); out.ids=ps.map(function(p){return p.id;});
+      out.text=rnd1(["Here's where I'd send you. ","Okay, my short list. ","Easy. "])+"For "+({eat:"food",night:"a night out",stay:"a place to stay","do":"things to see"})[cat]+" in "+d.name+": "+list(ps)+". "+ps[0].name+" is my favourite: "+ps[0].blurb+(cat==="stay"?" I can't book it for real yet, but I can build the trip around it.":""); out.chips=planChips(d).slice(0,1); return out; }
+    var dos=top(d,"do",2), e=top(d,"eat",1); out.ids=dos.concat(e).map(function(p){return p.id;});
+    out.text=rnd1([d.name+"? Great taste. ","Ah, "+d.name+". ","Yes! "+d.name+" is a good one. "])+(v?"Think "+v.p+". ":"")+"Don't miss "+dos[0].name+" and "+dos[1].name+", and eat at "+e[0].name+". Best time to go is "+lc1(d.facts[0][1])+". "+rnd1(["Want me to plan it?","Shall I put a trip together?","Curious what it costs?"]);
+    out.chips=planChips(d); return out; }
+  if(wantPlan){ out.text=rnd1(["Yes, let's plan something! ","I'm in. "])+"Give me a city, or just a mood like \"beach and nightlife, 7 nights, cheap\", and I'll build the whole thing."; out.chips=[{label:"Beach and nightlife, 7 nights",say:"Plan beach and nightlife for 7 nights, cheap"},{label:"Culture and food weekend",say:"Plan a culture and food weekend for a couple"}]; return out; }
+  out.text=rnd1(["Hmm, I'm not sure I caught that. Try me with a city, a country or a mood, like \"where is good in Spain?\" or \"somewhere cheap and warm\".","I didn't quite get that one. Ask me about a place, what it costs, or tell me to plan a trip.","Not sure what you mean yet. Name a city or a vibe and I'll take it from there."]);
+  out.chips=[{label:"Where is good in Spain?",say:"Where is good in Spain?"},{label:"Somewhere cheap and warm",say:"Somewhere cheap and warm"},{label:"Surprise me",say:"Surprise me with an idea"}];
+  return out;
 }
 function send(text){
   text=(text||"").trim(); if(!text||busy) return;
   sugg.hidden=true; bubble(text,"me"); history_.push({role:"user",content:text});
   var el=bubble("Thinking…","ai"), shown=[];
   function finish(answer,ids){ setMsg(el,answer); history_.push({role:"assistant",content:answer}); addShow(el,ids); busy=false; }
-  if(!sampleFn){ var d=demoAnswer(text); finish(d.text,d.ids); return; }
+  if(!sampleFn){ var d=demoAnswer(text); finish(d.text,d.ids); demoAfter(d); return; }
   busy=true;
   var start=Math.max(0,history_.length-9); if(history_[start].role!=="user") start++;
   var sys=prompt();
@@ -1897,8 +1960,12 @@ function send(text){
   }).catch(function(err){
     if(err&&err.code==="not_granted"){ sampleFn=null; setStatus(); }
     var d=demoAnswer(text);
-    finish((err&&err.code==="rate_limited"?"The assistant is busy right now, so here is a built-in answer. ":"")+d.text,d.ids);
+    finish((err&&err.code==="rate_limited"?"The assistant is busy right now, so here is a built-in answer. ":"")+d.text,d.ids); demoAfter(d);
   });
+}
+function demoAfter(d){
+  if(d.plan){ setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(d.plan,true); },1500); return; }
+  if(d.chips&&d.chips.length) setChips(d.chips.map(function(c){ return {label:c.label,fn:function(){ if(c.go){ openSheet(null); goDest(c.go); } else send(c.say); }}; }));
 }
 function setStatus(){ chatStatus.textContent=sampleFn?"Answers from Claude · places are sample data":"Built-in demo answers · places are sample data"; }
 /* ---------- trip planner: step by step, or generated from a description ---------- */
@@ -2101,9 +2168,9 @@ function startGen(){
   say("Tell me about your ideal holiday in your own words: what you like to do, how many days, who is coming, your budget and where you fly from. I'll build the whole trip.");
   setChips(["Beach and nightlife, 7 nights, two friends, cheap","Culture and food, a long weekend for a couple","Quiet luxury by the sea, 10 nights, honeymoon"].map(function(t){ return {label:t,fn:function(){ genText(t); }}; }));
 }
-function genText(text){
+function genText(text,quiet){
   if(busy) return;
-  bubble(text,"me"); chat.prefs=(chat.prefs+" "+text).trim(); setChips([]);
+  if(!quiet) bubble(text,"me"); chat.prefs=(chat.prefs+" "+text).trim(); setChips([]);
   var el=say("Putting your trip together…");
   function done(o){ var pl=toPlan(o)||toPlan(heur(chat.prefs)); setMsg(el,o.note||"Here is a trip built around what you told me."); renderPlan(pl); afterPlan(); busy=false; }
   if(!sampleFn) return done(heur(chat.prefs));
