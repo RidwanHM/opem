@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16l">
+<meta name="opem-build" content="2026-11-16m">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -106,6 +106,8 @@ button.dest-row:hover{border-color:rgba(255,178,62,.6)}
 body[data-rmap="1"] #rmap{opacity:1;visibility:visible}
 #rmap .maplibregl-ctrl-bottom-right,#rmap .maplibregl-ctrl-bottom-left{bottom:auto;top:116px}
 body[data-rmap="1"] #placeTitle{background:rgba(12,18,34,.88);padding:7px 13px;border-radius:999px;border:1px solid var(--line)}
+.dest-pin{transition:padding .32s ease,font-size .32s ease,gap .32s ease,box-shadow .32s ease}
+@media (prefers-reduced-motion:reduce){ .dest-pin{transition:none} }
 .dest-pin.mini{padding:5px;font-size:0;gap:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .dest-pin.mini i{width:8px;height:8px}
 .dest-pin.mini i::after{display:none}
