@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16n">
+<meta name="opem-build" content="2026-11-16o">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -118,6 +118,7 @@ body[data-rmap="1"] #placeTitle{background:rgba(12,18,34,.88);padding:7px 13px;b
 @media (hover:hover){ .dest-pin.pic.mini:hover i{background-image:inherit} }
 body[data-rmap="1"] .pin.pic span{width:46px;height:46px;min-width:46px;padding:0;border-radius:50%;background-size:cover;background-position:center;border:2.5px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.5)}
 body[data-rmap="1"] .pin.pic svg{display:none}
+body[data-rmap="1"] .pin.pic{z-index:2}
 .dest-row.haspic{display:flex;align-items:center;gap:10px;text-align:left}
 .dpic{width:36px;height:36px;border-radius:10px;flex:none;display:block}
 @media (hover:hover){ .dest-pin.mini:hover,.dest-pin.mini:focus-visible{padding:6px 12px 6px 8px;font-size:13.5px;gap:8px;z-index:3} }
@@ -778,7 +779,7 @@ WORLD.forEach(function(row){
     var ar=areas[0], bd=9e9; areas.forEach(function(x){ var d=d3.geoDistance(x.ll,l.ll); if(d<bd){bd=d;ar=x;} });
     places.push({id:id+"_d"+(i+1),cat:"do",name:l.n,area:bd*6371<3?ar.n:a[1],ll:l.ll,rating:Math.round((4.4+((i*29+id.length)%6)/10)*10)/10,kind:l.k,blurb:l.b});
   });
-  DESTS.push({id:id,name:a[1],country:a[2],c:c,spanLat:.17,spanLon:.2,cur:a[5],real:true,zoom:11.4,air:[a[8],+a[9]],cont:a[6],
+  DESTS.push({id:id,name:a[1],country:a[2],c:c,spanLat:.17,spanLon:.2,cur:a[5],real:true,zoom:(function(){ var m=0; areas.forEach(function(x){ m=Math.max(m,d3.geoDistance(c,x.ll)*6371); }); return Math.round(clamp(14.3-Math.log(Math.max(m*2,1))/Math.LN2,10.4,13.2)*10)/10; })(),air:[a[8],+a[9]],cont:a[6],
     facts:[["Best months",a[10]],["Typical temperature",a[11]],["Currency",a[5]],["Time zone",a[12]]],land:[],dim:[],labels:[],seas:[],places:places});
 });
 DESTS.forEach(function(d){ if(!d.real){ d.real=true; d.zoom=Math.round((Math.log(180/d.spanLat)/Math.LN2+.75)*10)/10; } });
