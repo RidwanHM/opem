@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16x">
+<meta name="opem-build" content="2026-11-16y">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1092,7 +1092,7 @@ function projAll(polys){ return polys.map(function(r){return r.map(proj);}); }
 
 var raf=0;
 function draw(){ if(!raf) raf=requestAnimationFrame(render); }
-var pinTimer=0, pinView="", pinMoveT=0;
+var pinTimer=0, pinView="", pinMoveT=0, nameCont=null, nameContT=0;
 function render(){
   raf=0; if(!W) return;
   var z=view.z, nr=nearest(), nd=nr.d, rel=z/nd.z1;
@@ -1182,6 +1182,7 @@ function render(){
   if(state.dest!==active){ state.dest=active; onMode(); }
   var placed=[], dots=[], nowT=performance.now(), pend=false, vk=view.lon.toFixed(2)+","+view.lat.toFixed(2)+","+view.z.toFixed(3);
   if(vk!==pinView){ pinView=vk; pinMoveT=nowT; }
+  if(nameCont){ var ncz=0; CONTS.forEach(function(c){ if(c[0]===nameCont) ncz=Math.log(c[3])/Math.log(kP/kG); }); if((nowT-nameContT>1700&&z<ncz*.55)||visitMode||active) nameCont=null; }
   var still=reduce||nowT-pinMoveT>240;   // names only change once the globe has come to rest
   DESTS.forEach(function(d){
     var p=proj(d.c), show=!active&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&front(d.c)&&z<.5, flip=p[0]>W-120;
@@ -1196,7 +1197,9 @@ function render(){
     d.pin.classList.toggle("gone",d.isGone);
     if(!d.pw){ ctx.save(); ctx.font="700 13.5px Figtree, system-ui, sans-serif"; d.pw=ctx.measureText(d.name).width+(d.pic?54:46); ctx.restore(); }
     // which cities get a name: fixed priority (list order), so the same ones win while the globe moves
-    var want=z<.09||hideW, x0=flip?p[0]-d.pw+13:p[0]-13;
+    if(d.cc===undefined){ d.cc=null; if(typeof CONTS!=="undefined") CONTS.forEach(function(c){ if(c[1]===CONT[d.id]) d.cc=c[0]; }); }
+    var named=nameCont?d.cc===nameCont:z>=.09;   // names show from continent level: when you tap a continent, or zoom in that far yourself
+    var want=!named||hideW, x0=flip?p[0]-d.pw+13:p[0]-13;
     var m=d.isMini===false?-8:8;   // a name that is showing keeps its place a little longer than a new one needs to earn it
     if(!want){ placed.forEach(function(q){ if(x0<q.x1+m&&x0+d.pw>q.x0-m&&Math.abs(p[1]-q.y)<27+m*.5) want=true; }); if(!want) placed.push({x0:x0,x1:x0+d.pw,y:p[1]}); }
     // change state only after the wish has held for a moment, so names don't flicker in and out
@@ -1662,7 +1665,7 @@ function tapGlobe(x,y){
   if(!visitMode&&worldState==="ok"&&!state.dest&&!(typeof J!=="undefined"&&J.on)&&view.z<.45){
     // normal globe: a tap on land zooms to that continent
     var l0=proj.invert([x,y]); if(!l0||isNaN(l0[0])||isNaN(l0[1])||d3.geoDistance(l0,[view.lon,view.lat])>Math.PI/2) return;
-    for(var k=0;k<countries.length;k++) if(countries[k].f&&d3.geoContains(countries[k].geom,l0)) return focusCont(countries[k].f.cont);
+    for(var k=0;k<countries.length;k++) if(countries[k].f&&d3.geoContains(countries[k].geom,l0)){ nameCont=countries[k].f.cont; nameContT=performance.now(); return focusCont(nameCont); }
     return;
   }
   if(!visitMode||worldState!=="ok") return;
