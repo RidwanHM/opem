@@ -1873,7 +1873,7 @@ var TAGWORDS=[["b",/beach|strand|sun|sol\b|swim|bade|coast|island|øy|sea\b/,"be
  ["n",/nature|natur|hike|hiking|fjell|mountain|wildlife|safari|outdoor/,"nature"],["$",/cheap|billig|budget|budsjett|afford|low cost|rimelig/,"a small budget"],["l",/luxur|luksus|fancy|5 star|five star|splurge/,"luxury"],["r",/romantic|romantisk|honeymoon|bryllupsreise|couple|kjæreste|anniversary/,"romance"],
  ["w",/warm|varm|winter sun|vintersol|hot\b|escape the cold|sunny in (dec|jan|feb|nov)/,"winter sun"],["a",/adventure|eventyr|adrenaline|trek|explor/,"adventure"],["s",/shopping|shop\b|big city|storby|skyline/,"big-city energy"]];
 var brain={last:null,lastDest:null,n:0};
-function lc1(t){ return t.charAt(0).toLowerCase()+t.slice(1); }
+function lc1(t){ return /^(January|February|March|April|May|June|July|August|September|October|November|December)/.test(t)?t:t.charAt(0).toLowerCase()+t.slice(1); }
 function rnd1(a){ var i=Math.floor(Math.random()*a.length); if(a.length>1&&a[i]===brain.last) i=(i+1)%a.length; brain.last=a[i]; return a[i]; }
 function cityLine(d){ var v=VIBES_OF[d.id]; return d.name+(v?" for "+v.p:""); }
 function joinAnd(a){ return a.length<2?a.join(""):a.slice(0,-1).join(", ")+" and "+a[a.length-1]; }
