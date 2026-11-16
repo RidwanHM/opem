@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16v">
+<meta name="opem-build" content="2026-11-16w">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -69,6 +69,14 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .dock{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:10px;align-items:stretch;max-width:480px;margin:0 auto;pointer-events:none}
 .dock > *{pointer-events:auto}
 .panel{border-radius:var(--r);padding:16px}
+#glance{transition:transform .18s ease}
+.grab{display:block;width:100%;margin:-10px 0 2px;padding:8px 0 8px;touch-action:none;cursor:grab}
+.grab span{display:block;width:46px;height:5px;border-radius:3px;background:rgba(255,255,255,.34);margin:0 auto}
+.grab:focus-visible span{background:var(--accent)}
+#glance h2{touch-action:none;cursor:grab}
+#glance.min{padding-bottom:12px}
+#glance.min > :not(.grab):not(h2){display:none !important}
+#glance.min h2{margin-bottom:0}
 h1{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.25;margin:0 0 4px;text-wrap:balance}
 h2{font-family:var(--display);font-weight:500;font-size:14px;letter-spacing:.03em;margin:0}
 .sub{color:var(--muted);margin:0 0 12px;font-size:14px}
@@ -121,8 +129,8 @@ body[data-rmap="1"] #placeTitle{background:rgba(12,18,34,.88);padding:7px 13px;b
 .dest-pin.pic:not(.mini) i::after{display:none}
 .dest-pin.mini i{background-image:none !important}
 @media (hover:hover){ .dest-pin.pic.mini:hover i{background-image:inherit} }
-body[data-rmap="1"] .pin.pic span{width:46px;height:46px;min-width:46px;padding:0;border-radius:50%;background-size:cover;background-position:center;border:2.5px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.5)}
-body[data-rmap="1"] .pin.pic svg{display:none}
+body[data-rmap="1"] .pin.pic.pic span{width:46px;height:46px;min-width:46px;padding:0;border-radius:50%;background-size:cover;background-position:center;border:2.5px solid #fff;box-shadow:0 4px 14px rgba(0,0,0,.5)}
+body[data-rmap="1"] .pin.pic.pic svg{display:none}
 body[data-rmap="1"] .pin.pic{z-index:2}
 .dest-row.haspic{display:flex;align-items:center;gap:10px;text-align:left}
 .dpic{width:36px;height:36px;border-radius:10px;flex:none;display:block}
@@ -422,6 +430,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
     </section>
 
     <section class="panel glass only-dest" id="glance" aria-labelledby="p-title">
+      <button class="grab" type="button" id="glanceGrab" aria-expanded="true" aria-controls="glanceBody" aria-label="Hide or show the city details"><span></span></button>
       <h2 id="p-title"></h2>
       <figure class="gpic" id="glancePic" hidden></figure>
       <div class="facts" id="facts"></div>
@@ -2006,6 +2015,18 @@ function remoteSend(text,finish){
   })
   .catch(function(){ fallback(""); });
 }
+/* the city panel can be dragged or tapped down to a thin bar, so the whole map shows; the Opem bar stays */
+(function(){
+  var gl=document.getElementById("glance"), grab=document.getElementById("glanceGrab"), h2=document.getElementById("p-title"), y0=null, dy=0, moved=false;
+  function setMin(on){ gl.classList.toggle("min",on); grab.setAttribute("aria-expanded",String(!on)); gl.style.transform="";
+    if(rmapOn&&rmap){ try{ rmap.easeTo({padding:{top:W<900?110:70,bottom:W<900?(on?150:Math.round(H*.42)):0,left:W<900?0:420,right:0},duration:350}); }catch(e){} } }
+  function down(e){ y0=e.clientY; dy=0; moved=false; try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(x){} }
+  function move(e){ if(y0===null) return; dy=e.clientY-y0; if(Math.abs(dy)>6) moved=true; var min=gl.classList.contains("min"); gl.style.transform="translateY("+clamp(dy,min?-40:0,min?0:140)*.6+"px)"; }
+  function up(){ if(y0===null) return; var min=gl.classList.contains("min"); y0=null;
+    if(!moved) setMin(!min); else if(!min&&dy>34) setMin(true); else if(min&&dy<-24) setMin(false); else gl.style.transform=""; }
+  [grab,h2].forEach(function(el){ el.addEventListener("pointerdown",down); el.addEventListener("pointermove",move); el.addEventListener("pointerup",up); el.addEventListener("pointercancel",function(){ y0=null; gl.style.transform=""; }); });
+  grab.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); setMin(!gl.classList.contains("min")); } });
+})();
 function demoAfter(d){
   if(d.plan){ setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(d.plan,true); },1500); return; }
   if(d.chips&&d.chips.length) setChips(d.chips.map(function(c){ return {label:c.label,fn:function(){ if(c.go){ openSheet(null); goDest(c.go); } else send(c.say); }}; }));
