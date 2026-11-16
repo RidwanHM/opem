@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16e">
+<meta name="opem-build" content="2026-11-16f">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -104,7 +104,8 @@ button.dest-row:hover{border-color:rgba(255,178,62,.6)}
 /* markers */
 #rmap{position:absolute;inset:0;opacity:0;visibility:hidden;transition:opacity .5s ease,visibility .5s}
 body[data-rmap="1"] #rmap{opacity:1;visibility:visible}
-#rmap .maplibregl-ctrl-bottom-right,#rmap .maplibregl-ctrl-bottom-left{bottom:auto;top:64px}
+#rmap .maplibregl-ctrl-bottom-right,#rmap .maplibregl-ctrl-bottom-left{bottom:auto;top:116px}
+body[data-rmap="1"] #placeTitle{background:rgba(12,18,34,.88);padding:7px 13px;border-radius:999px;border:1px solid var(--line)}
 .dest-pin.mini{padding:5px;font-size:0;gap:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .dest-pin.mini i{width:8px;height:8px}
 .dest-pin.mini i::after{display:none}
@@ -389,7 +390,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
     <section class="panel glass only-dest" id="glance" aria-labelledby="p-title">
       <h2 id="p-title"></h2>
       <div class="facts" id="facts"></div>
-      <p class="note">Tap a pin or a building to open it. Roads and buildings are hand-drawn, and prices and ratings are sample data.</p>
+      <p class="note" id="glanceNote"></p>
     </section>
 
     <section class="panel glass only-dest" id="card" hidden aria-live="polite"></section>
@@ -1266,7 +1267,7 @@ function syncPins(){
 var card=document.getElementById("card"), glance=document.getElementById("glance"), askLabel=document.getElementById("askLabel");
 function select(id){
   state.sel=id; syncPins();
-  if(id&&rmapOn&&byId[id]&&byId[id].dest.real){ try{ rmap.easeTo({center:byId[id].ll,zoom:Math.max(rmap.getZoom(),13.2),offset:[0,-H*.16],duration:700}); }catch(e){} }
+  if(id&&rmapOn&&byId[id]&&byId[id].dest.real){ try{ rmap.easeTo({center:byId[id].ll,zoom:Math.max(rmap.getZoom(),13.2),duration:700}); }catch(e){} }
   if(!id){ card.hidden=true; glance.hidden=false; return; }
   var p=byId[id], saved=state.saved.indexOf(id)>=0;
   var price=p.cat==="stay"?"<b>NOK "+kr(p.price)+"</b> per night":(p.price?"About <b>"+p.dest.cur+" "+kr(p.price)+"</b> per person":"");
@@ -1298,7 +1299,9 @@ function syncRmap(){
       if(!rmap){
         rmap=new maplibregl.Map({container:"rmap",style:"https://tiles.openfreemap.org/styles/liberty",center:d.c,zoom:d.zoom,dragRotate:false,pitchWithRotate:false,attributionControl:{compact:true}});
         rmap.touchZoomRotate.disableRotation(); rmap.on("move",draw); rmap.on("click",function(){ if(state.sel) select(null); });
-      } else { rmap.resize(); rmap.jumpTo({center:d.c,zoom:d.zoom}); }
+        rmap.on("load",function(){ var at=document.querySelector("#rmap .maplibregl-ctrl-attrib"); if(at) at.classList.remove("maplibregl-compact-show"); });
+      } else rmap.resize();
+      rmap.setPadding({top:W<900?110:70,bottom:W<900?Math.round(H*.42):0,left:W<900?0:420,right:0}); rmap.jumpTo({center:d.c,zoom:d.zoom});
       rmapOn=true; document.body.dataset.rmap="1"; draw();
     }catch(e){ rmapOn=false; }
   });
@@ -1310,6 +1313,7 @@ function onMode(){
   if(d){
     document.getElementById("placeTitle").textContent=d.name+", "+d.country;
     document.getElementById("p-title").textContent=d.name+" at a glance";
+    document.getElementById("glanceNote").textContent=d.real?"Tap a pin to open it. The map and the landmarks are real; stays, food, nightlife, prices and ratings are sample data.":"Tap a pin or a building to open it. Roads and buildings are hand-drawn, and prices and ratings are sample data.";
     document.getElementById("facts").innerHTML=d.facts.map(function(f){return '<div class="fact"><small>'+esc(f[0])+"</small><b>"+esc(f[1])+"</b></div>";}).join("");
   }
   if(state.sel&&d&&byId[state.sel].dest!==d) select(null);
