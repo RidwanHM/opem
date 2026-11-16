@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16t">
+<meta name="opem-build" content="2026-11-16u">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1944,6 +1944,7 @@ function send(text){
   sugg.hidden=true; bubble(text,"me"); history_.push({role:"user",content:text});
   var el=bubble("Thinking…","ai"), shown=[];
   function finish(answer,ids){ setMsg(el,answer); history_.push({role:"assistant",content:answer}); addShow(el,ids); busy=false; }
+  if(!sampleFn&&remoteAI) return remoteSend(text,finish);
   if(!sampleFn){ var d=demoAnswer(text); finish(d.text,d.ids); demoAfter(d); return; }
   busy=true;
   var start=Math.max(0,history_.length-9); if(history_[start].role!=="user") start++;
@@ -1963,11 +1964,37 @@ function send(text){
     finish((err&&err.code==="rate_limited"?"The assistant is busy right now, so here is a built-in answer. ":"")+d.text,d.ids); demoAfter(d);
   });
 }
+/* the real AI on the hosted site: a server function (api/chat) holds the key and the personality */
+var remoteAI=false;
+if(!sampleFn&&/^https?:$/.test(location.protocol)){ try{ fetch("api/chat").then(function(r){ return r.json(); }).then(function(j){ remoteAI=!!(j&&j.ok); setStatus(); }).catch(function(){}); }catch(e){} }
+function remoteSend(text,finish){
+  var focus=findDests(" "+text.toLowerCase()+" ")[0]||brain.lastDest||state.dest||null; if(focus) brain.lastDest=focus;
+  var ctx="Today: "+iso(new Date())+". The traveller usually flies from Oslo.\n"+(state.dest?"They are looking at the "+state.dest.name+" map.\n":"They are looking at the globe.\n")+
+    (chat.plan?"Their current plan: "+planText(chat.plan).slice(0,500)+"\n":"")+
+    "Cities on Opem's map (id: name, country): "+DESTS.map(function(d){ return d.id+": "+d.name+", "+d.country; }).join("; ")+"\n"+
+    (focus?"Sample places in "+focus.name+" (id | category | name | area):\n"+focus.places.map(function(p){ return p.id+" | "+CATS[p.cat].label+" | "+p.name+" | "+p.area; }).join("\n"):"");
+  busy=true;
+  function fallback(note){ var d=demoAnswer(text); finish((note||"")+d.text,d.ids); demoAfter(d); }
+  fetch("api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:history_.slice(-10),context:ctx})})
+  .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
+  .then(function(o){
+    if(!o.ok||!o.j||!o.j.text){ if(o.status===503) remoteAI=false, setStatus(); return fallback(o.status===429?"I've been chatting a lot, so here's a quick one from memory. ":""); }
+    var act={}, clean=o.j.text.replace(/\[\[\s*(plan|show|go)\s*:\s*([^\]]*)\]\]/gi,function(m,k,v){ act[k.toLowerCase()]=v.trim(); return ""; }).trim();
+    var ids=(act.show||"").split(/[\s,]+/).filter(function(i){ return byId[i]; }); if(ids.length&&byId[ids[0]]) brain.lastDest=byId[ids[0]].dest;
+    finish(clean||"On it.",ids);
+    if(act.plan){ setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(act.plan,true); },1600); return; }
+    var g=act.go&&destById[act.go.toLowerCase()], chips=[];
+    if(g) chips.push({label:"Show me "+g.name,fn:function(){ openSheet(null); goDest(g); }});
+    if(brain.lastDest) chips.push({label:"Plan "+brain.lastDest.name+" for me",fn:function(){ send("Plan a trip to "+brain.lastDest.name); }});
+    setChips(chips);
+  })
+  .catch(function(){ fallback(""); });
+}
 function demoAfter(d){
   if(d.plan){ setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(d.plan,true); },1500); return; }
   if(d.chips&&d.chips.length) setChips(d.chips.map(function(c){ return {label:c.label,fn:function(){ if(c.go){ openSheet(null); goDest(c.go); } else send(c.say); }}; }));
 }
-function setStatus(){ chatStatus.textContent=sampleFn?"Answers from Claude · places are sample data":"Built-in demo answers · places are sample data"; }
+function setStatus(){ chatStatus.textContent=sampleFn?"Answers from Claude · places are sample data":remoteAI?"Opem AI · places and prices are sample data":"Built-in answers · places are sample data"; }
 /* ---------- trip planner: step by step, or generated from a description ---------- */
 var chat={mode:"menu",step:0,plan:null,prefs:"",opts:[],draft:null};
 state.plans=[];
