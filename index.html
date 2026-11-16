@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16i">
+<meta name="opem-build" content="2026-11-16j">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1142,7 +1142,7 @@ function render(){
     var d=o.d, p=o.p, show=!active&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&front(d.c)&&z<.5, flip=p[0]>W-120;
     d.pin.style.visibility=show?"visible":"hidden";
     if(!show) return;
-    var mini=!!d.real&&z<.09; d.pin.classList.toggle("mini",mini);
+    var mini=!!d.air&&z<.09; d.pin.classList.toggle("mini",mini);
     if(mini){ d.pin.classList.remove("flip"); d.pin.style.transform="translate("+p[0]+"px,"+p[1]+"px) translate(-50%,-50%)"; return; }
     if(!d.pw) d.pw=d.pin.offsetWidth||96;
     var x0=flip?p[0]-d.pw+13:p[0]-13, y=p[1];
