@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16a">
+<meta name="opem-build" content="2026-11-16b">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Opem Travel Globe</title>
@@ -176,6 +176,8 @@ body[data-visit] .dock{display:none}
 .jdots span.done{background:var(--accent)}
 .jdots span.now{background:#fff}
 .jshare .btn{flex:1}
+.jshare .btn{padding:0 8px;font-size:13.5px}
+.jvid{width:62%;margin:0 auto;display:block;border-radius:16px;border:1px solid var(--line);background:#060913}
 .jlink{width:100%;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.05);color:var(--ink);padding:0 12px;font:inherit;font-size:13px}
 .jpic{width:100%;border-radius:14px;border:1px solid var(--line);display:block}
 a.btn{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;color:var(--ink)}
@@ -2166,7 +2168,7 @@ function openJDetail(j){
     (cs.length?'<h3>Countries</h3><div class="jchips">'+cs.map(function(n){return "<span>"+esc(n)+"</span>";}).join("")+"</div>":"")+
     '<h3>Cities and places</h3><div class="jchips">'+j.stops.map(function(x){return "<span>"+esc(x.name)+"</span>";}).join("")+"</div></div>"+
     '<div class="sec"><h2>Day by day</h2>'+(j.example?'<span class="ex">Example data</span>':"")+"</div>";
-  h=h.replace('<div class="sec"><h2>Day by day</h2>','<div class="actions jshare">'+(j.shared?'<button class="btn primary" type="button" id="jKeep">Save to my trips</button>':'<button class="btn" type="button" id="jShareLink">Share link</button><button class="btn" type="button" id="jSharePic">Share picture</button>')+'</div><div class="stack" id="jShareOut" hidden></div><div class="sec"><h2>Day by day</h2>');
+  h=h.replace('<div class="sec"><h2>Day by day</h2>','<div class="actions jshare">'+(j.shared?'<button class="btn primary" type="button" id="jKeep">Save to my trips</button>':'<button class="btn" type="button" id="jShareLink">Share link</button><button class="btn" type="button" id="jSharePic">Share picture</button><button class="btn" type="button" id="jShareVid">Share video</button>')+'</div><div class="stack" id="jShareOut" hidden></div><div class="sec"><h2>Day by day</h2>');
   if(j.shared) h=h.replace('<span class="dot"></span>Journey','<span class="dot"></span>Shared journey');
   var day=1;
   j.stops.forEach(function(x,i){
@@ -2181,7 +2183,7 @@ function openJDetail(j){
   document.getElementById("jBack").onclick=closeJDetail;
   document.getElementById("jSim").onclick=function(){ startJourney(j); };
   if(j.shared) document.getElementById("jKeep").onclick=function(){ delete j.shared; journeys.unshift(j); saveJourneys(); syncTrips(); openJDetail(j); };
-  else { document.getElementById("jShareLink").onclick=function(){ shareLink(j); }; document.getElementById("jSharePic").onclick=function(){ sharePicture(j); }; }
+  else { document.getElementById("jShareLink").onclick=function(){ shareLink(j); }; document.getElementById("jSharePic").onclick=function(){ sharePicture(j); }; document.getElementById("jShareVid").onclick=function(){ shareVideo(j); }; }
 }
 function saveJourneys(){ try{ localStorage.setItem("opem.journeys",JSON.stringify(journeys)); }catch(e){} }
 function legKm(a,b){ return d3.geoDistance(a.ll,b.ll)*6371; }
@@ -2488,6 +2490,107 @@ function journeyImage(j){
     g.font="700 "+Math.round(Math.min(26,gap/7.5))+"px "+F; g.textAlign="center"; g.textBaseline="middle"; g.fillStyle="#fff"; g.fillText(x.name,60+gap*(k+.5),1296); });
   g.fillStyle="#7f8aa3"; g.font="600 22px "+F; g.textAlign="center"; g.fillText(SHARE_BASE.replace(/^https?:\/\//,"").replace(/\/$/,""),W/2,1328);
   return c;
+}
+/* ---------- sharing a journey as a vertical video (for Instagram, Snapchat, TikTok) ---------- */
+function videoPlan(j){
+  var segs=[], t=0, n=j.stops.length, sd=n>8?1300:1900, ld=n>8?1200:1700;
+  j.stops.forEach(function(x,i){ segs.push({k:"stop",i:i,t0:t,d:sd}); t+=sd; if(i<n-1){ segs.push({k:"leg",i:i,t0:t,d:ld}); t+=ld; } });
+  segs.push({k:"end",i:n-1,t0:t,d:2400}); t+=2400;
+  return {segs:segs,total:t};
+}
+function wrapText(g,text,maxW,maxLines){
+  var words=String(text).split(/\s+/), lines=[], cur="";
+  words.forEach(function(w){ var tr=cur?cur+" "+w:w; if(g.measureText(tr).width>maxW&&cur){ lines.push(cur); cur=w; } else cur=tr; });
+  if(cur) lines.push(cur);
+  if(lines.length>maxLines){ lines=lines.slice(0,maxLines); lines[maxLines-1]=lines[maxLines-1].replace(/[\s,.;]+\S*$/,"")+"…"; }
+  return lines;
+}
+function videoFrame(g,j,plan,T,W,H){
+  var F="Figtree, system-ui, sans-serif", st=j.stops, seg=plan.segs[plan.segs.length-1], i;
+  for(i=0;i<plan.segs.length;i++) if(T<plan.segs[i].t0+plan.segs[i].d){ seg=plan.segs[i]; break; }
+  var e=clamp((T-seg.t0)/seg.d,0,1), ez=e<.5?2*e*e:1-Math.pow(-2*e+2,2)/2, s=st[seg.i], pos=s.ll, S1=W*1.05, sc=S1, veh=null, upto=seg.i, part=0;
+  if(seg.k==="leg"){ var nx=st[seg.i+1], dist=d3.geoDistance(s.ll,nx.ll), gi=d3.geoInterpolate(s.ll,nx.ll); pos=gi(ez);
+    sc=S1-(S1-clamp(W*.34/Math.max(dist,.05),W*.42,S1))*Math.sin(Math.PI*ez); veh={mode:nx.by,q:ez,gi:gi,dist:dist}; upto=seg.i+1; part=ez; }
+  if(seg.k==="end"){ var pts=st.map(function(x){return x.ll;}), cen=d3.geoCentroid({type:"MultiPoint",coordinates:pts}), mx=.12; pts.forEach(function(p){ mx=Math.max(mx,d3.geoDistance(cen,p)); });
+    var sE=clamp(W*.36/Math.sin(Math.min(mx*1.15,1.45)),W*.42,S1), k2=Math.min(1,ez*1.8); pos=d3.geoInterpolate(s.ll,cen)(k2); sc=S1+(sE-S1)*k2; }
+  var cx=W/2, cy=H*.47, pr=d3.geoOrthographic().rotate([-pos[0],-(pos[1]-(seg.k==="end"?0:3))]).scale(sc).translate([cx,cy]).clipAngle(90), path=d3.geoPath(pr,g);
+  var bg=g.createLinearGradient(0,0,0,H); bg.addColorStop(0,"#0b1226"); bg.addColorStop(1,"#060913"); g.fillStyle=bg; g.fillRect(0,0,W,H);
+  for(i=0;i<70;i++){ g.fillStyle="rgba(255,255,255,"+(.15+((i*37)%50)/100)+")"; g.fillRect((i*193)%W,(i*347)%H,2,2); }
+  var og=g.createRadialGradient(cx-sc*.3,cy-sc*.35,sc*.1,cx,cy,sc*1.05); og.addColorStop(0,"#1c4f86"); og.addColorStop(1,"#0c2748");
+  g.beginPath(); g.arc(cx,cy,sc,0,6.3); g.fillStyle=og; g.fill();
+  g.beginPath(); path(d3.geoGraticule10()); g.strokeStyle="rgba(255,255,255,.07)"; g.lineWidth=1; g.stroke();
+  g.beginPath(); path(land); g.fillStyle="#3fa77c"; g.fill();
+  g.lineCap="round"; g.lineJoin="round";
+  function vis(ll){ return d3.geoDistance(ll,[pos[0],pos[1]])<1.5; }
+  for(var a=1;a<=upto&&a<st.length;a++){
+    var g2=d3.geoInterpolate(st[a-1].ll,st[a].ll), lim=(a===upto&&veh)?part:1;
+    g.beginPath(); path({type:"LineString",coordinates:d3.range(0,25).map(function(q){ return g2(lim*q/24); })});
+    g.setLineDash(st[a].by==="plane"||st[a].by==="boat"?[9,11]:[]); g.strokeStyle="rgba(6,9,19,.6)"; g.lineWidth=9; g.stroke(); g.strokeStyle=LEGCOL[st[a].by]||"#fff"; g.lineWidth=4.5; g.stroke(); g.setLineDash([]);
+  }
+  g.font="700 22px "+F; g.textAlign="center"; g.textBaseline="top";
+  st.forEach(function(x,k){ var reached=seg.k==="end"||k<=seg.i; if(!reached||!vis(x.ll)) return; var p=pr(x.ll); if(!p) return;
+    g.beginPath(); g.arc(p[0],p[1],9,0,6.3); g.fillStyle="#ffb23e"; g.fill(); g.strokeStyle="#060913"; g.lineWidth=3; g.stroke();
+    g.lineWidth=5; g.strokeStyle="rgba(6,9,19,.9)"; g.strokeText(x.name,p[0],p[1]+14); g.fillStyle="#fff"; g.fillText(x.name,p[0],p[1]+14); });
+  if(veh){ var c1=pr(veh.gi(veh.q)), c0=pr(veh.gi(Math.max(0,veh.q-.02))), c2=pr(veh.gi(Math.min(1,veh.q+.02))), lift=veh.mode==="plane"?Math.sin(Math.PI*veh.q)*clamp(veh.dist*150,24,80):0;
+    if(c0&&c1&&c2) drawVehicle(g,veh.mode,c1[0],c1[1]-lift,Math.atan2(c2[1]-c0[1],c2[0]-c0[0]),veh.mode==="plane"?2.6+.6*Math.sin(Math.PI*veh.q):2.8); }
+  else if(seg.k==="stop"){ var pc=pr(s.ll), pop=clamp(e*seg.d/420,0,1), ks=2.7*(pop<1?(1-Math.pow(1-pop,3))*(1+.18*Math.sin(pop*Math.PI)):1); drawKid(g,pc[0],pc[1]-6,ks,COSTUME[s.iso]||"tourist",T,stopFlag(s)); }
+  // top: brand and title
+  var tg=g.createLinearGradient(0,0,0,250); tg.addColorStop(0,"rgba(6,9,19,.92)"); tg.addColorStop(1,"rgba(6,9,19,0)"); g.fillStyle=tg; g.fillRect(0,0,W,250);
+  g.textAlign="left"; g.textBaseline="middle";
+  g.beginPath(); g.arc(54,70,11,0,6.3); g.fillStyle="#ffb23e"; g.fill(); g.beginPath(); g.arc(54,70,4.2,0,6.3); g.fillStyle="#0b1226"; g.fill();
+  g.fillStyle="#fff"; g.font="800 32px "+F; g.fillText("Opem",76,72);
+  var fs=50; g.font="800 "+fs+"px "+F; while(g.measureText(j.title).width>W-88&&fs>28){ fs-=3; g.font="800 "+fs+"px "+F; } g.fillText(j.title,44,140);
+  // bottom: caption
+  var bh=330, by=H-bh-70, bx=36, bw=W-72, r=28;
+  g.beginPath(); g.moveTo(bx+r,by); g.arcTo(bx+bw,by,bx+bw,by+bh,r); g.arcTo(bx+bw,by+bh,bx,by+bh,r); g.arcTo(bx,by+bh,bx,by,r); g.arcTo(bx,by,bx+bw,by,r); g.closePath(); g.fillStyle="rgba(12,18,34,.88)"; g.fill(); g.strokeStyle="rgba(255,255,255,.14)"; g.lineWidth=2; g.stroke();
+  var dw=(bw-56-(st.length-1)*8)/st.length;
+  st.forEach(function(x,k){ g.fillStyle=seg.k==="end"||k<seg.i||(k===seg.i&&seg.k==="leg")?"#ffb23e":k===seg.i?"#fff":"rgba(255,255,255,.18)"; g.fillRect(bx+28+k*(dw+8),by+26,dw,6); });
+  g.textBaseline="alphabetic"; g.textAlign="left";
+  var dd=jDays(j), nm, head, sub, body="";
+  if(seg.k==="end"){ head="That was "+j.title; sub=st.length+" stops · "+j.countries+(j.countries===1?" country":" countries")+(dd?" · "+dd+" days":""); body="About "+kr(j.km)+" km. Make your own at "+SHARE_BASE.replace(/^https?:\/\//,"").replace(/\/$/,""); }
+  else if(seg.k==="leg"){ var nn=st[seg.i+1]; head="On the way to "+nn.name; sub=MODES[nn.by].replace(/^by /,"By ")+" · about "+kr(Math.round(legKm(s,nn)/10)*10)+" km"; }
+  else{ nm=cName(s.iso); head=s.name+(nm&&nm!==s.name?", "+nm:""); sub="Stop "+(seg.i+1)+" of "+st.length+(s.days?" · "+s.days+(s.days===1?" day":" days"):""); body=s.did||COSNAME[COSTUME[s.iso]||"tourist"]; }
+  g.fillStyle="#ffb23e"; g.font="700 24px "+F; g.fillText(sub,bx+28,by+82);
+  g.fillStyle="#fff"; var hs=42; g.font="800 "+hs+"px "+F; while(g.measureText(head).width>bw-56&&hs>26){ hs-=2; g.font="800 "+hs+"px "+F; } g.fillText(head,bx+28,by+134);
+  if(body){ g.fillStyle="#c9d2e3"; g.font="500 27px "+F; wrapText(g,body,bw-56,4).forEach(function(l,k){ g.fillText(l,bx+28,by+184+k*36); }); }
+}
+var vidBusy=false;
+function shareVideo(j){
+  if(vidBusy) return;
+  var W=720,H=1280, types=["video/mp4;codecs=avc1.42E01E","video/mp4","video/webm;codecs=vp9","video/webm"], mime="";
+  if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream) return shareOut('<p class="note">This browser cannot record video. Try Chrome or Safari on your phone.</p>');
+  types.some(function(t){ try{ if(MediaRecorder.isTypeSupported(t)){ mime=t; return true; } }catch(e){} return false; });
+  if(!mime) return shareOut('<p class="note">This browser cannot record video. Try Chrome or Safari on your phone.</p>');
+  var o=shareOut('<p class="note" id="vMsg" aria-live="polite">Making your video…</p><div class="vwrap" id="vWrap"></div><div class="actions" id="vActs" hidden><button class="btn primary" type="button" id="vShare" hidden>Share video</button><a class="btn" id="vSave">Download</a></div><p class="note" id="vHint" hidden></p>');
+  var c=document.createElement("canvas"); c.width=W; c.height=H; c.className="jvid"; document.getElementById("vWrap").appendChild(c);
+  var g=c.getContext("2d"), plan=videoPlan(j), chunks=[], rec, stream, msg=document.getElementById("vMsg");
+  videoFrame(g,j,plan,0,W,H);
+  try{ stream=c.captureStream(30); rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:5000000}); }catch(e){ msg.textContent="The video could not be recorded in this browser."; return; }
+  vidBusy=true;
+  rec.ondataavailable=function(ev){ if(ev.data&&ev.data.size) chunks.push(ev.data); };
+  rec.onstop=function(){
+    vidBusy=false; stream.getTracks().forEach(function(t){ t.stop(); });
+    var mp4=mime.indexOf("mp4")>=0, type=mp4?"video/mp4":"video/webm", blob=new Blob(chunks,{type:type}), name="opem-"+normName(j.title).replace(/ +/g,"-")+(mp4?".mp4":".webm");
+    if(!document.getElementById("vWrap")||!blob.size){ if(msg.isConnected) msg.textContent="The video could not be recorded in this browser."; return; }
+    var url=URL.createObjectURL(blob), v=document.createElement("video"); v.src=url; v.controls=true; v.playsInline=true; v.muted=true; v.loop=true; v.className="jvid";
+    var wrap=document.getElementById("vWrap"); wrap.innerHTML=""; wrap.appendChild(v);
+    msg.textContent="Your video is ready ("+Math.round(plan.total/1000)+" seconds, vertical).";
+    document.getElementById("vActs").hidden=false; var sv=document.getElementById("vSave"); sv.href=url; sv.setAttribute("download",name);
+    var f=null, sb=document.getElementById("vShare"), hint=document.getElementById("vHint"); try{ f=new File([blob],name,{type:type}); }catch(e){}
+    if(f&&navigator.canShare&&navigator.canShare({files:[f]})){ sb.hidden=false; sb.onclick=function(){ navigator.share({files:[f],title:"Opem · "+j.title}).catch(function(){}); };
+      hint.textContent="Share video opens your phone's share menu. Pick Instagram, Snapchat or TikTok there."+(mp4?"":" This browser made a WebM file, which Instagram may not accept."); }
+    else hint.textContent="This browser cannot open the share menu for videos. Download it and post it from your camera roll."+(mp4?"":" The file is WebM, which Instagram may not accept; Safari or a newer Chrome makes MP4.");
+    hint.hidden=false;
+  };
+  rec.start(250);
+  var t0=performance.now();
+  (function tick(now){
+    var T=now-t0;
+    if(!c.isConnected){ try{ rec.stop(); }catch(e){} vidBusy=false; return; }
+    videoFrame(g,j,plan,Math.min(T,plan.total-1),W,H);
+    msg.textContent="Making your video… "+Math.min(99,Math.round(T/plan.total*100))+"%. Keep this open.";
+    if(T<plan.total+150) requestAnimationFrame(tick); else { try{ rec.stop(); }catch(e){ vidBusy=false; } }
+  })(t0);
 }
 function shareOut(html){ var o=document.getElementById("jShareOut"); o.innerHTML=html; o.hidden=false; return o; }
 function shareLink(j){
