@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16g">
+<meta name="opem-build" content="2026-11-16h">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1300,7 +1300,7 @@ function syncRmap(){
         rmap=new maplibregl.Map({container:"rmap",style:"https://tiles.openfreemap.org/styles/liberty",center:d.c,zoom:d.zoom,dragRotate:false,pitchWithRotate:false,attributionControl:{compact:true}});
         rmap.touchZoomRotate.disableRotation(); rmap.on("move",draw); rmap.on("click",function(){ if(state.sel) select(null); });
         rmap.on("zoom",function(){
-          var cur=state.dest; if(!rmapOn||!cur||!cur.real||rmap.getZoom()>cur.zoom-1.6) return;
+          var cur=state.dest; if(!rmapOn||!cur||!cur.real||rmap.getZoom()>cur.zoom-2.6) return;
           // zoomed out of the city: hand back to the globe, centred where the map was
           var ce=rmap.getCenter(); rmapOn=false; delete document.body.dataset.rmap; select(null);
           try{ rmap.stop(); }catch(e){}
