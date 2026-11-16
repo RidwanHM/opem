@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16j">
+<meta name="opem-build" content="2026-11-16k">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -769,7 +769,7 @@ WORLD.forEach(function(row){
   DESTS.push({id:id,name:a[1],country:a[2],c:c,spanLat:.17,spanLon:.2,cur:a[5],real:true,zoom:11.4,air:[a[8],+a[9]],cont:a[6],
     facts:[["Best months",a[10]],["Typical temperature",a[11]],["Currency",a[5]],["Time zone",a[12]]],land:[],dim:[],labels:[],seas:[],places:places});
 });
-DESTS.forEach(function(d){ if(!d.real){ d.real=true; d.zoom=Math.round((Math.log(180/d.spanLat)/Math.LN2+1.35)*10)/10; } });
+DESTS.forEach(function(d){ if(!d.real){ d.real=true; d.zoom=Math.round((Math.log(180/d.spanLat)/Math.LN2+.75)*10)/10; } });
 var PLACES=[], byId={}, destById={};
 DESTS.forEach(function(d){ destById[d.id]=d; d.places.forEach(function(p){ p.dest=d; PLACES.push(p); byId[p.id]=p; }); });
 var TRIPS=[
