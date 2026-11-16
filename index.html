@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16h">
+<meta name="opem-build" content="2026-11-16i">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -124,6 +124,8 @@ body[data-rmap="1"] #placeTitle{background:rgba(12,18,34,.88);padding:7px 13px;b
 .pin.off{display:none}
 .pin.model span,.pin.model.sel span,.pin.model.hl span{background:transparent;border-color:transparent;box-shadow:none;transform:none;min-width:42px;height:46px}
 .pin.model svg{display:none}
+body[data-rmap="1"] .pin.model span{background:var(--c);border-color:#0a1020;box-shadow:0 3px 10px rgba(0,0,0,.45);min-width:28px;height:28px}
+body[data-rmap="1"] .pin.model svg{display:block}
 .pin.model:focus-visible span{border-color:var(--accent)}
 
 /* sheets */
@@ -767,6 +769,7 @@ WORLD.forEach(function(row){
   DESTS.push({id:id,name:a[1],country:a[2],c:c,spanLat:.17,spanLon:.2,cur:a[5],real:true,zoom:11.4,air:[a[8],+a[9]],cont:a[6],
     facts:[["Best months",a[10]],["Typical temperature",a[11]],["Currency",a[5]],["Time zone",a[12]]],land:[],dim:[],labels:[],seas:[],places:places});
 });
+DESTS.forEach(function(d){ if(!d.real){ d.real=true; d.zoom=Math.round((Math.log(180/d.spanLat)/Math.LN2+1.35)*10)/10; } });
 var PLACES=[], byId={}, destById={};
 DESTS.forEach(function(d){ destById[d.id]=d; d.places.forEach(function(p){ p.dest=d; PLACES.push(p); byId[p.id]=p; }); });
 var TRIPS=[
@@ -1152,7 +1155,7 @@ function render(){
   PLACES.forEach(function(p){
     var on=showPins&&p.dest===nd;
     p.el.style.visibility=on?"visible":"hidden";
-    if(on){ var xy=proj(p.ll); if(rmapOn&&p.dest.real){ var mp=rmap.project(p.ll); xy=[mp.x,mp.y]; } p.el.style.transform="translate("+xy[0]+"px,"+xy[1]+"px) translate(-50%,"+(p.model?"-80%":"-50%")+")"; }
+    if(on){ var xy=proj(p.ll); if(rmapOn&&p.dest.real){ var mp=rmap.project(p.ll); xy=[mp.x,mp.y]; } p.el.style.transform="translate("+xy[0]+"px,"+xy[1]+"px) translate(-50%,"+(p.model&&!(rmapOn&&p.dest.real)?"-80%":"-50%")+")"; }
   });
 }
 
