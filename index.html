@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16k">
+<meta name="opem-build" content="2026-11-16l">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -109,6 +109,7 @@ body[data-rmap="1"] #placeTitle{background:rgba(12,18,34,.88);padding:7px 13px;b
 .dest-pin.mini{padding:5px;font-size:0;gap:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .dest-pin.mini i{width:8px;height:8px}
 .dest-pin.mini i::after{display:none}
+@media (hover:hover){ .dest-pin.mini:hover,.dest-pin.mini:focus-visible{padding:6px 12px 6px 8px;font-size:13.5px;gap:8px;z-index:3} }
 .dest-pin.flip{flex-direction:row-reverse;padding:6px 8px 6px 12px}
 .dest-pin{position:absolute;left:0;top:0;pointer-events:auto;display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13.5px;box-shadow:0 6px 20px rgba(0,0,0,.45);white-space:nowrap}
 .dest-pin i{width:10px;height:10px;border-radius:50%;background:var(--accent-ink);display:block;position:relative}
@@ -1142,7 +1143,7 @@ function render(){
     var d=o.d, p=o.p, show=!active&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&front(d.c)&&z<.5, flip=p[0]>W-120;
     d.pin.style.visibility=show?"visible":"hidden";
     if(!show) return;
-    var mini=!!d.air&&z<.09; d.pin.classList.toggle("mini",mini);
+    var mini=z<.09; d.pin.classList.toggle("mini",mini);
     if(mini){ d.pin.classList.remove("flip"); d.pin.style.transform="translate("+p[0]+"px,"+p[1]+"px) translate(-50%,-50%)"; return; }
     if(!d.pw) d.pw=d.pin.offsetWidth||96;
     var x0=flip?p[0]-d.pw+13:p[0]-13, y=p[1];
@@ -1568,6 +1569,12 @@ function drawCard(c){
 }
 function openCountry(c,viaGlobe){ setList(false); var was=vSel.cont; vSel.country=c.name; if(c.f) vSel.cont=c.f.cont; if(viaGlobe&&vSel.cont&&vSel.cont!==was) focusCont(vSel.cont); syncVisit(); if(!c.f) drawCard(c); visitEl.scrollTop=0; draw(); }
 function tapGlobe(x,y){
+  if(!visitMode&&worldState==="ok"&&!state.dest&&!(typeof J!=="undefined"&&J.on)&&view.z<.45){
+    // normal globe: a tap on land zooms to that continent
+    var l0=proj.invert([x,y]); if(!l0||isNaN(l0[0])||isNaN(l0[1])||d3.geoDistance(l0,[view.lon,view.lat])>Math.PI/2) return;
+    for(var k=0;k<countries.length;k++) if(countries[k].f&&d3.geoContains(countries[k].geom,l0)) return focusCont(countries[k].f.cont);
+    return;
+  }
   if(!visitMode||worldState!=="ok") return;
   var ll=proj.invert([x,y]); if(!ll||isNaN(ll[0])||isNaN(ll[1])||d3.geoDistance(ll,[view.lon,view.lat])>Math.PI/2) return;
   for(var i=0;i<countries.length;i++) if(d3.geoContains(countries[i].geom,ll)) return openCountry(countries[i],true);
