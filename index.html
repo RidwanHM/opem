@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16o">
+<meta name="opem-build" content="2026-11-16p">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -106,10 +106,14 @@ button.dest-row:hover{border-color:rgba(255,178,62,.6)}
 body[data-rmap="1"] #rmap{opacity:1;visibility:visible}
 #rmap .maplibregl-ctrl-bottom-right,#rmap .maplibregl-ctrl-bottom-left{bottom:auto;top:116px}
 body[data-rmap="1"] #placeTitle{background:rgba(12,18,34,.88);padding:7px 13px;border-radius:999px;border:1px solid var(--line)}
-.dest-pin{transition:padding .32s ease,font-size .32s ease,gap .32s ease,box-shadow .32s ease}
+.dest-pin{transition:padding .6s cubic-bezier(.22,.8,.3,1),gap .6s cubic-bezier(.22,.8,.3,1),box-shadow .6s ease}
+.dest-pin .nm{display:inline-block;max-width:180px;max-height:18px;line-height:18px;opacity:1;overflow:hidden;white-space:nowrap;transition:max-width .65s cubic-bezier(.22,.8,.3,1),max-height .4s ease,opacity .5s ease .08s}
+.dest-pin.mini .nm{max-width:0;max-height:8px;opacity:0;transition:max-width .55s cubic-bezier(.4,0,.6,1),max-height .55s ease,opacity .3s ease}
+.dest-pin i{transition:width .5s ease,height .5s ease,margin .5s ease}
+@media (prefers-reduced-motion:reduce){ .dest-pin .nm,.dest-pin i{transition:none} }
 @media (prefers-reduced-motion:reduce){ .dest-pin{transition:none} }
 .dest-pin{z-index:2}
-.dest-pin.mini{z-index:1;padding:5px;font-size:0;gap:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.dest-pin.mini{z-index:1;padding:5px;gap:0;box-shadow:0 2px 8px rgba(0,0,0,.4)}
 .dest-pin.mini i{width:8px;height:8px}
 .dest-pin.mini i::after{display:none}
 .dest-pin.pic:not(.mini) i{width:24px;height:24px;margin:-3px 0 -3px -3px;background-size:cover;background-position:center;border:1.5px solid var(--accent-ink);border-radius:50%}
@@ -121,7 +125,7 @@ body[data-rmap="1"] .pin.pic svg{display:none}
 body[data-rmap="1"] .pin.pic{z-index:2}
 .dest-row.haspic{display:flex;align-items:center;gap:10px;text-align:left}
 .dpic{width:36px;height:36px;border-radius:10px;flex:none;display:block}
-@media (hover:hover){ .dest-pin.mini:hover,.dest-pin.mini:focus-visible{padding:6px 12px 6px 8px;font-size:13.5px;gap:8px;z-index:3} }
+@media (hover:hover){ .dest-pin.mini:hover,.dest-pin.mini:focus-visible{padding:6px 12px 6px 8px;gap:8px;z-index:3} .dest-pin.mini:hover .nm,.dest-pin.mini:focus-visible .nm{max-width:180px;max-height:18px;opacity:1} }
 .dest-pin.flip{flex-direction:row-reverse;padding:6px 8px 6px 12px}
 .dest-pin{position:absolute;left:0;top:0;pointer-events:auto;display:flex;align-items:center;gap:8px;padding:6px 12px 6px 8px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700;font-size:13.5px;box-shadow:0 6px 20px rgba(0,0,0,.45);white-space:nowrap}
 .dest-pin i{width:10px;height:10px;border-radius:50%;background:var(--accent-ink);display:block;position:relative}
@@ -1063,6 +1067,7 @@ function projAll(polys){ return polys.map(function(r){return r.map(proj);}); }
 
 var raf=0;
 function draw(){ if(!raf) raf=requestAnimationFrame(render); }
+var pinTimer=0, pinView="", pinMoveT=0;
 function render(){
   raf=0; if(!W) return;
   var z=view.z, nr=nearest(), nd=nr.d, rel=z/nd.z1;
@@ -1150,21 +1155,28 @@ function render(){
   }
   var active=(rel>.55&&nr.dist<.06)?nd:null;
   if(state.dest!==active){ state.dest=active; onMode(); }
-  var placed=[];
-  DESTS.map(function(d){ return {d:d,p:proj(d.c)}; }).sort(function(a,b){return a.p[1]-b.p[1];}).forEach(function(o){
-    var d=o.d, p=o.p, show=!active&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&front(d.c)&&z<.5, flip=p[0]>W-120;
+  var placed=[], nowT=performance.now(), pend=false, vk=view.lon.toFixed(2)+","+view.lat.toFixed(2)+","+view.z.toFixed(3);
+  if(vk!==pinView){ pinView=vk; pinMoveT=nowT; }
+  var still=reduce||nowT-pinMoveT>240;   // names only change once the globe has come to rest
+  DESTS.forEach(function(d){
+    var p=proj(d.c), show=!active&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&front(d.c)&&z<.5, flip=p[0]>W-120;
     d.pin.style.visibility=show?"visible":"hidden";
-    if(!show) return;
-    var mini=z<.09; d.pin.classList.toggle("mini",mini);
-    if(mini){ d.pin.classList.remove("flip"); d.pin.style.transform="translate("+p[0]+"px,"+p[1]+"px) translate(-50%,-50%)"; return; }
+    if(!show){ d.isMini=undefined; return; }
     if(!d.pw){ ctx.save(); ctx.font="700 13.5px Figtree, system-ui, sans-serif"; d.pw=ctx.measureText(d.name).width+(d.pic?54:46); ctx.restore(); }
-    var x0=flip?p[0]-d.pw+13:p[0]-13, y=p[1], clash=false;
-    placed.forEach(function(q){ if(x0<q.x1+4&&x0+d.pw>q.x0-4&&Math.abs(y-q.y)<30) clash=true; });
-    if(clash){ d.pin.classList.add("mini"); d.pin.classList.remove("flip"); d.pin.style.transform="translate("+p[0]+"px,"+p[1]+"px) translate(-50%,-50%)"; return; }
-    placed.push({x0:x0,x1:x0+d.pw,y:y});
+    // which cities get a name: fixed priority (list order), so the same ones win while the globe moves
+    var want=z<.09, x0=flip?p[0]-d.pw+13:p[0]-13;
+    var m=d.isMini===false?-8:8;   // a name that is showing keeps its place a little longer than a new one needs to earn it
+    if(!want){ placed.forEach(function(q){ if(x0<q.x1+m&&x0+d.pw>q.x0-m&&Math.abs(p[1]-q.y)<27+m*.5) want=true; }); if(!want) placed.push({x0:x0,x1:x0+d.pw,y:p[1]}); }
+    // change state only after the wish has held for a moment, so names don't flicker in and out
+    if(d.isMini===undefined){ d.isMini=want; d.wantV=want; }
+    else if(want!==d.isMini){ if(d.wantV!==want){ d.wantV=want; d.wantT=nowT; } if(still&&nowT-d.wantT>=(want?300:180)) d.isMini=want; else pend=true; }
+    else d.wantV=want;
+    d.pin.classList.toggle("mini",d.isMini);
+    if(d.isMini){ d.pin.classList.remove("flip"); d.pin.style.transform="translate("+p[0]+"px,"+p[1]+"px) translate(-9px,-50%)"; return; }
     d.pin.classList.toggle("flip",flip);
-    d.pin.style.transform="translate("+p[0]+"px,"+y+"px) translate("+(flip?"calc(-100% + 13px)":"-13px")+",-50%)";
+    d.pin.style.transform="translate("+p[0]+"px,"+p[1]+"px) translate("+(flip?"calc(-100% + 13px)":"-13px")+",-50%)";
   });
+  if(pend&&!pinTimer) pinTimer=setTimeout(function(){ pinTimer=0; draw(); },130);
   var showPins=localA>.6;
   PLACES.forEach(function(p){
     var on=showPins&&p.dest===nd;
@@ -1246,7 +1258,7 @@ var pinsEl=document.getElementById("pins"), destsEl=document.getElementById("des
 function kr(n){ return n.toLocaleString("en").replace(/,/g," "); }
 function esc(s){return String(s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
 DESTS.forEach(function(d){
-  var b=document.createElement("button"); b.type="button"; b.className="dest-pin"; b.innerHTML="<i></i>"+esc(d.name);
+  var b=document.createElement("button"); b.type="button"; b.className="dest-pin"; b.innerHTML='<i></i><span class="nm">'+esc(d.name)+"</span>";
   b.setAttribute("aria-label","Fly to "+d.name);
   b.addEventListener("click",function(){ goDest(d); }); pinsEl.appendChild(b); d.pin=b;
   var r=document.createElement("button"); r.type="button"; r.className="dest-row";
