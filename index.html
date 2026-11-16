@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16u">
+<meta name="opem-build" content="2026-11-16v">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -181,6 +181,12 @@ body[data-rmap="1"] .pin.model svg{display:block}
 .plan ol{margin:0;padding:0;list-style:none;display:grid;gap:7px}
 .plan ol b{display:block;font-size:12.5px;color:var(--accent)}
 .plan .tot{font-weight:700;font-size:16px}
+.gpic{margin:0 0 10px;position:relative;border-radius:14px;overflow:hidden;border:1px solid var(--line)}
+.gpic img{display:block;width:100%;height:120px;object-fit:cover}
+.gpic figcaption{position:absolute;left:0;right:0;bottom:0;padding:14px 10px 5px;font-size:10.5px;color:#fff;background:linear-gradient(transparent,rgba(0,0,0,.7))}
+.gpic a,.piccap a{color:inherit;text-decoration:underline}
+.livefl{margin-top:6px}
+.cphoto{width:96px;height:96px;border-radius:16px;object-fit:cover;flex:none;display:block}
 .gf{display:inline-block;margin-top:5px;color:var(--accent);font-weight:600;text-decoration:underline}
 .btn:disabled{opacity:.7;cursor:default}
 .stack{display:flex;flex-direction:column;gap:10px}
@@ -417,6 +423,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 
     <section class="panel glass only-dest" id="glance" aria-labelledby="p-title">
       <h2 id="p-title"></h2>
+      <figure class="gpic" id="glancePic" hidden></figure>
       <div class="facts" id="facts"></div>
       <p class="note" id="glanceNote"></p>
     </section>
@@ -1318,7 +1325,7 @@ function select(id){
   var price=p.cat==="stay"?"<b>NOK "+kr(p.price)+"</b> per night":(p.price?"About <b>"+p.dest.cur+" "+kr(p.price)+"</b> per person":"");
   card.innerHTML='<div class="card-head"><div><span class="tag" style="--c:'+CATS[p.cat].color+'"><span class="dot"></span>'+esc(CATS[p.cat].label)+" · "+esc(p.area)+'</span><h1>'+esc(p.name)+'</h1></div><button class="x" type="button" id="cardX" aria-label="Close place">&times;</button></div>'+
     '<p class="meta">'+esc(p.kind)+" · <b>"+p.rating.toFixed(1)+"</b> rating"+(price?" · "+price:"")+" · sample data</p>"+
-    '<p class="blurb">'+esc(p.blurb)+"</p>"+
+    '<p class="blurb">'+esc(p.blurb)+"</p>"+(p.cat==="stay"?'<p class="note" style="margin:0 0 10px"><a class="gf" style="margin:0" href="'+esc(bookingUrl(p.dest))+'" target="_blank" rel="noopener">See real stays in '+esc(p.dest.name)+" on Booking.com</a></p>":"")+
     '<div class="actions"><button class="btn primary" type="button" id="cardAsk">Ask Opem about it</button><button class="btn" type="button" id="cardSave" aria-pressed="'+saved+'">'+(saved?"Saved to trip":"Save to trip")+"</button></div>";
   card.hidden=false; glance.hidden=true;
   document.getElementById("cardX").onclick=function(){ select(null); };
@@ -1366,6 +1373,7 @@ function onMode(){
   if(d){
     document.getElementById("placeTitle").textContent=d.name+", "+d.country;
     document.getElementById("p-title").textContent=d.name+" at a glance";
+    cityPhoto(d);
     document.getElementById("glanceNote").textContent=d.real?"Tap a pin to open it. The map and the landmarks are real; stays, food, nightlife, prices and ratings are sample data.":"Tap a pin or a building to open it. Roads and buildings are hand-drawn, and prices and ratings are sample data.";
     document.getElementById("facts").innerHTML=d.facts.map(function(f){return '<div class="fact"><small>'+esc(f[0])+"</small><b>"+esc(f[1])+"</b></div>";}).join("");
   }
@@ -1627,7 +1635,15 @@ function drawCard(c){
   var x=document.createElement("button"); x.type="button"; x.className="btn"; x.textContent="Close"; x.onclick=function(){ vSel.country=null; visitCard.hidden=true; syncVisit(); draw(); };
   acts.appendChild(t); acts.appendChild(x); visitCard.appendChild(acts); visitCard.hidden=false;
   var cv=document.getElementById("shape"), g=cv.getContext("2d");
-  if(f){ drawScene(g,sceneFor(f).ops,192); cv.style.opacity=on?"1":".55"; return; }
+  if(f){ drawScene(g,sceneFor(f).ops,192); cv.style.opacity=on?"1":".55";
+    // a real photo replaces the drawing when the photo service is connected
+    getPhoto(SCENE_OF[f.iso3]?sceneFor(f).cap:c.name+" landscape",function(p){
+      if(vSel.country!==c.name&&!(document.getElementById("shape")===cv)) return; var im=new Image();
+      im.onload=function(){ if(!cv.isConnected) return; var sc=Math.max(192/im.width,192/im.height), w=im.width*sc, h=im.height*sc; g.clearRect(0,0,192,192); g.drawImage(im,(192-w)/2,(192-h)/2,w,h);
+        var cap=visitCard.querySelector(".piccap"); if(cap) cap.innerHTML=creditHtml(p); };
+      im.src=p.small||p.url;
+    });
+    return; }
   var ct=d3.geoCentroid(c.geom);
   var pr=d3.geoOrthographic().rotate([-ct[0],-ct[1]]).fitExtent([[12,12],[180,180]],c.geom), pa=d3.geoPath(pr,g);
   g.clearRect(0,0,192,192); g.beginPath(); pa(c.geom); g.fillStyle=on?"#ffb23e":"#3a4a68"; g.fill(); g.strokeStyle=on?"rgba(92,52,0,.8)":"rgba(255,255,255,.3)"; g.lineWidth=2; g.stroke();
@@ -2073,13 +2089,41 @@ function planText(pl){
   return pl.title+", "+pl.sub+". Out: "+(pl.out?fl(pl.out):"no flight")+". Stay: "+pl.stay.name+". Transfer: "+pl.transfer.label+". "+
     pl.days.map(function(d){return d.t+": "+d.x;}).join(" ")+" Home: "+(pl.back?fl(pl.back):"no flight")+". Estimated total NOK "+pl.total+" (sample prices).";
 }
+/* live data on the hosted site: real flight prices, real photos, and Booking.com searches */
+var live={flights:false,photo:false};
+if(/^https?:$/.test(location.protocol)&&!window.claude){ ["flights","photo"].forEach(function(k){ try{ fetch("api/"+k+"?ping=1").then(function(r){ return r.json(); }).then(function(j){ live[k]=!!(j&&j.ok); if(k==="photo"&&live.photo&&state.dest) cityPhoto(state.dest); }).catch(function(){}); }catch(e){} }); }
+function bookingUrl(d,checkin,checkout,pax){
+  var u="https://www.booking.com/searchresults.html?ss="+encodeURIComponent(d.name+", "+d.country);
+  if(checkin&&checkout) u+="&checkin="+iso(checkin)+"&checkout="+iso(checkout);
+  return u+"&group_adults="+(pax||2)+"&no_rooms=1";
+}
+function getPhoto(q,cb){
+  if(!live.photo) return; var k="opem.ph."+q.toLowerCase();
+  try{ var c=JSON.parse(localStorage.getItem(k)||"null"); if(c&&Date.now()-c.t<6048e5){ if(c.p) cb(c.p); return; } }catch(e){}
+  fetch("api/photo?q="+encodeURIComponent(q)).then(function(r){ return r.json(); }).then(function(j){ if(!j||!j.ok) return; try{ localStorage.setItem(k,JSON.stringify({t:Date.now(),p:j.photo||null})); }catch(e){} if(j.photo&&j.photo.url) cb(j.photo); }).catch(function(){});
+}
+function creditHtml(p){ return 'Photo by <a href="'+esc(p.byUrl||p.page)+'" target="_blank" rel="noopener">'+esc(p.by||"a photographer")+'</a> on <a href="'+esc(p.page)+'" target="_blank" rel="noopener">Unsplash</a>'; }
+function cityPhoto(d){
+  var fig=document.getElementById("glancePic"); fig.hidden=true; fig.innerHTML="";
+  getPhoto(d.name+" "+d.country,function(p){ if(state.dest!==d) return; fig.innerHTML='<img alt="'+esc(p.alt||d.name)+'" src="'+esc(p.small||p.url)+'"><figcaption>'+creditHtml(p)+"</figcaption>"; fig.hidden=false; });
+}
+function liveFlights(pl,el){
+  if(!live.flights||!pl.out||!ORIG[pl.from]||!AIR[pl.dest.id]) return;
+  var box=el.querySelector(".livefl"); if(!box) return; box.textContent="Checking real prices…"; box.hidden=false;
+  fetch("api/flights?from="+ORIG[pl.from][2]+"&to="+AIR[pl.dest.id][0]+"&depart="+iso(pl.depart)+"&ret="+iso(pl.ret)).then(function(r){ return r.json(); }).then(function(j){
+    var o=j&&j.ok&&j.offers&&j.offers[0]; if(!o){ box.textContent="No recent real price found for this route. Use the Google Flights link to check."; return; }
+    var dep=o.depart?new Date(o.depart):null, back=o.ret?new Date(o.ret):null;
+    box.innerHTML="<b>Real price found: from NOK "+kr(o.price)+"</b> per person return"+(o.airline?" with "+esc(o.airline):"")+(dep&&!isNaN(dep)?", "+dm(dep)+(back&&!isNaN(back)?" to "+dm(back):""):"")+" · "+(o.transfers?o.transfers+(o.transfers===1?" stop":" stops"):"direct")+
+      (j.exact?"":" (closest dates that month)")+". A recent price seen by other travellers, so it can change."+(o.url?' <a class="gf" href="'+esc(o.url)+'" target="_blank" rel="noopener">Open on Aviasales</a>':"");
+  }).catch(function(){ box.hidden=true; });
+}
 function renderPlan(pl){
   chat.plan=pl;
   var el=document.createElement("div"); el.className="msg ai plan";
   function row(k,v){ return "<dt>"+esc(k)+"</dt><dd>"+v+"</dd>"; }
   el.innerHTML="<h3>"+esc(pl.title)+'</h3><p class="note">'+esc(pl.sub)+" · flights and prices are sample data</p><dl>"+
-    row("Fly out",pl.out?esc(fl(pl.out))+"<br>"+gfLink(pl.from,pl.dest,pl.depart,pl.ret):"No flight needed")+
-    row("Stay",esc(pl.stay.name)+" · "+esc(pl.stay.kind)+" · NOK "+kr(pl.stay.price)+" per night")+
+    row("Fly out",pl.out?esc(fl(pl.out))+"<br>"+gfLink(pl.from,pl.dest,pl.depart,pl.ret)+'<div class="livefl note" hidden></div>':"No flight needed")+
+    row("Stay",esc(pl.stay.name)+" · "+esc(pl.stay.kind)+" · NOK "+kr(pl.stay.price)+' per night (sample)<br><a class="gf" href="'+esc(bookingUrl(pl.dest,pl.depart,pl.ret,pl.pax))+'" target="_blank" rel="noopener">See real stays for these dates on Booking.com</a>')+
     row("Airport to your stay",esc(tr(pl.transfer)))+
     row("In "+pl.dest.name,"<ol>"+pl.days.map(function(d){return "<li><b>"+esc(d.t)+"</b>"+esc(d.x)+"</li>";}).join("")+"</ol>")+
     row("Fly home",pl.back?esc(fl(pl.back)):"No flight needed")+
@@ -2089,6 +2133,7 @@ function renderPlan(pl){
   var show=document.createElement("button"); show.type="button"; show.className="btn"; show.textContent="Show the trip on the map";
   show.onclick=function(){ showPlan(pl); };
   el.appendChild(save); el.appendChild(show); log.appendChild(el); log.scrollTop=log.scrollHeight;
+  liveFlights(pl,el);
 }
 function showPlan(pl){ openSheet(null); highlight(pl.ids); showPlace(pl.stay.id); }
 
