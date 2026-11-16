@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16b">
+<meta name="opem-build" content="2026-11-16c">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Opem Travel Globe</title>
@@ -1016,7 +1016,8 @@ function render(){
       if(outC.length){ ctx.beginPath(); outC.forEach(function(c){ path(c.geom); }); ctx.fillStyle="rgba(255,178,62,.2)"; ctx.fill(); }
       if(inC.length){
         ctx.beginPath(); inC.forEach(function(c){ path(c.geom); });
-        ctx.shadowColor="#ffb23e"; ctx.shadowBlur=16; ctx.fillStyle="#ffb23e"; ctx.fill(); ctx.shadowBlur=0;
+        ctx.globalAlpha=worldA*Math.pow(vt,.75);
+        ctx.shadowColor="#ffb23e"; ctx.shadowBlur=16*vt; ctx.fillStyle="#ffb23e"; ctx.fill(); ctx.shadowBlur=0;
         ctx.strokeStyle="rgba(92,52,0,.7)"; ctx.lineWidth=.8; ctx.stroke();
       }
     }
@@ -1397,9 +1398,9 @@ function runVisitAnim(home){
   cancelAnimationFrame(visitRaf); visitRaf=0; cancelAnimationFrame(anim); stopGlide();
   var to=visitMode?1:0;
   if(reduce){ visitT=to; if(to) view.z=0; draw(); return; }
-  var s0={t:visitT,lon:view.lon,lat:view.lat,z:view.z}, T=1700, t0=performance.now(), turn=(to?1:-1)*720+(home?((18-s0.lon+540)%360)-180:0), lat1=home?37:to?clamp(s0.lat,-45,55):s0.lat, z1=to||home?0:s0.z;
+  var s0={t:visitT,lon:view.lon,lat:view.lat,z:view.z}, T=to?1700:2700, t0=performance.now(), turn=(to?1:-1)*720+(home?((18-s0.lon+540)%360)-180:0), lat1=home?37:to?clamp(s0.lat,-45,55):s0.lat, z1=to||home?0:s0.z;
   (function step(now){
-    var t=clamp((now-t0)/T,0,1), e=1-Math.pow(1-t,3), m=t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+    var t=clamp((now-t0)/T,0,1), ts=to?t:clamp(t/.62,0,1), e=1-Math.pow(1-ts,3), m=to?(t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2):Math.pow(t,2.2);
     view.lon=s0.lon+turn*e; view.lat=s0.lat+(lat1-s0.lat)*e; view.z=s0.z+(z1-s0.z)*e; visitT=s0.t+(to-s0.t)*m; draw();
     if(t<1) visitRaf=requestAnimationFrame(step); else { visitRaf=0; visitT=to; view.lon=((view.lon+540)%360)-180; draw(); }
   })(t0);
