@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17f">
+<meta name="opem-build" content="2026-11-17g">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1058,6 +1058,9 @@ var RAD=Math.PI/180;
 function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function smooth(v,a,b){var t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);}
 function scaleAt(z){return kG*Math.pow(kP/kG,z);}
+// The normal globe starts closer in than the whole-planet view and cannot be zoomed out past that. The Visited globe and journeys keep the full planet.
+function zHome(){ return Math.log(1.55)/Math.log(kP/kG); }
+function zFloor(){ return visitMode||(typeof J!=="undefined"&&J.on)?-0.06:zHome(); }
 
 function resize(){
   var r=canvas.getBoundingClientRect(), dpr=Math.min(window.devicePixelRatio||1,2);
@@ -1182,7 +1185,7 @@ function render(){
   if(state.dest!==active){ state.dest=active; onMode(); }
   var placed=[], dots=[], nowT=performance.now(), pend=false, vk=view.lon.toFixed(2)+","+view.lat.toFixed(2)+","+view.z.toFixed(3);
   if(vk!==pinView){ pinView=vk; pinMoveT=nowT; }
-  if(nameCont){ var ncz=0; CONTS.forEach(function(c){ if(c[0]===nameCont) ncz=Math.log(c[3])/Math.log(kP/kG); }); if((nowT-nameContT>1700&&z<ncz*.55)||visitMode||active) nameCont=null; }
+  if(nameCont){ var ncz=0, ncc=null; CONTS.forEach(function(c){ if(c[0]===nameCont){ ncz=Math.max(zHome(),Math.log(c[3])/Math.log(kP/kG)); ncc=c[2]; } }); var zh=zHome(); if((nowT-nameContT>1700&&((ncz>zh+.02&&z<zh+(ncz-zh)*.4)||(ncc&&d3.geoDistance(ncc,[view.lon,view.lat])>.9)))||visitMode||active) nameCont=null; }
   var still=reduce||nowT-pinMoveT>240;   // names only change once the globe has come to rest
   DESTS.forEach(function(d){
     var p=proj(d.c), show=!active&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&front(d.c)&&z<.5, flip=p[0]>W-120;
@@ -1198,7 +1201,7 @@ function render(){
     if(!d.pw){ ctx.save(); ctx.font="700 13.5px Figtree, system-ui, sans-serif"; d.pw=ctx.measureText(d.name).width+(d.pic?54:46); ctx.restore(); }
     // which cities get a name: fixed priority (list order), so the same ones win while the globe moves
     if(d.cc===undefined){ d.cc=null; if(typeof CONTS!=="undefined") CONTS.forEach(function(c){ if(c[1]===CONT[d.id]) d.cc=c[0]; }); }
-    var named=nameCont?d.cc===nameCont:z>=.09;   // names show from continent level: when you tap a continent, or zoom in that far yourself
+    var named=nameCont?d.cc===nameCont:z>=zHome()+.035;   // names show from continent level: when you tap a continent, or zoom in that far yourself
     var want=!named||hideW, x0=flip?p[0]-d.pw+13:p[0]-13;
     var m=d.isMini===false?-8:8;   // a name that is showing keeps its place a little longer than a new one needs to earn it
     if(!want){ placed.forEach(function(q){ if(x0<q.x1+m&&x0+d.pw>q.x0-m&&Math.abs(p[1]-q.y)<27+m*.5) want=true; }); if(!want) placed.push({x0:x0,x1:x0+d.pw,y:p[1]}); }
@@ -1224,6 +1227,7 @@ function render(){
 var anim=0;
 function flyTo(lon,lat,z,ms){
   endVisitAnim(); cancelAnimationFrame(anim); stopGlide();
+  if(!visitMode&&!(typeof J!=="undefined"&&J.on)) z=Math.max(z,zHome());
   if(reduce||!ms){ view.lon=lon; view.lat=lat; view.z=z; draw(); return; }
   var s={lon:view.lon,lat:view.lat,z:view.z}, d=((lon-s.lon+540)%360)-180, t0=performance.now();
   var zoomingIn=z>s.z;
@@ -1286,7 +1290,7 @@ function up(e){
 }
 canvas.addEventListener("pointerup",up); canvas.addEventListener("pointercancel",up);
 canvas.addEventListener("wheel",function(e){ e.preventDefault(); cancelAnimationFrame(anim); stopGlide(); zoomBy(-e.deltaY*0.0011); draw(); },{passive:false});
-function zoomBy(dz){ view.z=clamp(view.z+dz,-0.06,visitMode?.32:zMax); }
+function zoomBy(dz){ view.z=clamp(view.z+dz,zFloor(),visitMode?.32:zMax); }
 
 /* ---------- pins, chips, card ---------- */
 var pinsEl=document.getElementById("pins"), destsEl=document.getElementById("dests");
@@ -1654,7 +1658,7 @@ function runVisitAnim(home){
   cancelAnimationFrame(visitRaf); visitRaf=0; cancelAnimationFrame(anim); stopGlide();
   var to=visitMode?1:0;
   if(reduce){ visitT=to; if(to) view.z=0; draw(); return; }
-  var s0={t:visitT,lon:view.lon,lat:view.lat,z:view.z}, T=to?1700:2700, t0=performance.now(), turn=(to?1:-1)*720+(home?((18-s0.lon+540)%360)-180:0), lat1=home?37:to?clamp(s0.lat,-45,55):s0.lat, z1=to||home?0:s0.z;
+  var s0={t:visitT,lon:view.lon,lat:view.lat,z:view.z}, T=to?1700:2700, t0=performance.now(), turn=(to?1:-1)*720+(home?((18-s0.lon+540)%360)-180:0), lat1=home?37:to?clamp(s0.lat,-45,55):s0.lat, z1=to?0:home?zHome():Math.max(s0.z,zHome());
   (function step(now){
     var t=clamp((now-t0)/T,0,1), ts=to?t:clamp(t/.62,0,1), e=1-Math.pow(1-ts,3), m=to?(t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2):Math.pow(t,2.2);
     view.lon=s0.lon+turn*e; view.lat=s0.lat+(lat1-s0.lat)*e; view.z=s0.z+(z1-s0.z)*e; visitT=s0.t+(to-s0.t)*m; draw();
@@ -1729,6 +1733,7 @@ function tapGlobe(x,y){
     // normal globe: a tap on land zooms to that continent
     var l0=proj.invert([x,y]); if(!l0||isNaN(l0[0])||isNaN(l0[1])||d3.geoDistance(l0,[view.lon,view.lat])>Math.PI/2) return;
     for(var k=0;k<countries.length;k++) if(countries[k].f&&d3.geoContains(countries[k].geom,l0)){ nameCont=countries[k].f.cont; nameContT=performance.now(); return focusCont(nameCont); }
+    if(nameCont){ nameCont=null; draw(); }   // a tap on the sea puts the names away
     return;
   }
   if(!visitMode||worldState!=="ok") return;
@@ -2408,7 +2413,7 @@ function openSpin(){
   if(visitMode) setVisit(false);
   closeJourney();
   openSheet(null); select(null);
-  if(state.dest||view.z>.08) flyTo(HOME[0],HOME[1],0,900);
+  if(state.dest||view.z>zHome()+.02) flyTo(HOME[0],HOME[1],0,900);
   resetSpin(); spinEl.classList.add("open"); dock.style.visibility="hidden";
   var r=spinEl.getBoundingClientRect(), dpr=Math.min(window.devicePixelRatio||1,2);
   fx.width=Math.round(r.width*dpr); fx.height=Math.round(r.height*dpr); fxc.setTransform(dpr,0,0,dpr,0,0);
@@ -2551,12 +2556,12 @@ function spin(){
     spinGo.textContent="Flying to "+d.name+"…";
     flyPlane(org,from,d.c,function(p,bg){ confetti(p[0],p[1],bg); spinTimers.push(setTimeout(reveal,350)); });
   }
-  if(reduce){ finals.forEach(function(t,i){ setReel(i,t,true); }); view.lon=mid[0]; view.lat=clamp(mid[1]-14,-50,45); view.z=0; draw(); return finish(); }
+  if(reduce){ finals.forEach(function(t,i){ setReel(i,t,true); }); view.lon=mid[0]; view.lat=clamp(mid[1]-14,-50,45); view.z=zHome(); draw(); return finish(); }
   var stops=[1700,2400,3100], done=[false,false,false], T=3300, t0=performance.now(), s0={lon:view.lon,lat:view.lat,z:view.z};
   var dl=((mid[0]-s0.lon+540)%360)-180+1080, tl=clamp(mid[1]-14,-50,45), lastTick=0;
   (function step(now){
     var e=now-t0, t=clamp(e/T,0,1), k=1-Math.pow(1-t,3);
-    view.lon=s0.lon+dl*k; view.lat=s0.lat+(tl-s0.lat)*k; view.z=s0.z*(1-k); draw();
+    view.lon=s0.lon+dl*k; view.lat=s0.lat+(tl-s0.lat)*k; view.z=s0.z+(zHome()-s0.z)*k; draw();
     if(e-lastTick>75){ lastTick=e; for(var i=0;i<3;i++){ if(e>=stops[i]){ if(!done[i]){ done[i]=true; setReel(i,finals[i],true); } } else setReel(i,pick[i](),false); } }
     if(t<1) spinRaf=requestAnimationFrame(step); else { view.lon=((view.lon+540)%360)-180; for(var j=0;j<3;j++) if(!done[j]) setReel(j,finals[j],true); spinTimers.push(setTimeout(finish,250)); }
   })(t0);
@@ -3096,7 +3101,7 @@ function fromHash(jump){
 syncPins(); syncTrips();
 window.addEventListener("resize",resize);
 window.addEventListener("hashchange",function(){ fromHash(false); });
-resize(); fromHash(true);
+resize(); view.z=Math.max(view.z,zHome()); fromHash(true);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(draw);
 })();
 </script>
