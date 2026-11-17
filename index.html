@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17d">
+<meta name="opem-build" content="2026-11-17e">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1312,13 +1312,12 @@ function makePin(p){
   pinsEl.appendChild(b); p.el=b;
 }
 PLACES.forEach(makePin);
-/* Real places to stay from OpenStreetMap. Pilot: only the cities listed here. */
-var REALSTAY={phuket:1};
+/* Real places to stay from OpenStreetMap, for every city that has a real street map. */
 function glanceNote(d){
   document.getElementById("glanceNote").textContent=d.realStays?"Tap a pin to open it. The map, the landmarks and the places to stay are real (from OpenStreetMap, no prices yet); food, nightlife, prices and ratings are sample data.":d.real?"Tap a pin to open it. The map and the landmarks are real; stays, food, nightlife, prices and ratings are sample data.":"Tap a pin or a building to open it. Roads and buildings are hand-drawn, and prices and ratings are sample data.";
 }
 function loadRealStays(d){
-  if(!REALSTAY[d.id]||d.staysAsked||d.realStays||!/^https?:$/.test(location.protocol)||window.claude) return; d.staysAsked=true;
+  if(!d.real||d.staysAsked||d.realStays||!/^https?:$/.test(location.protocol)||window.claude) return; d.staysAsked=true;
   var ck="opem.st2."+d.id, cached=null; try{ var c=JSON.parse(localStorage.getItem(ck)||"null"); if(c&&Date.now()-c.t<6048e5&&c.s&&c.s.length>=4) cached=c.s; }catch(e){}
   // The street map's own data (OpenStreetMap, via OpenFreeMap) already holds every hotel. Read them from a small hidden map
   // placed over each sample stay in turn, and keep the best-known few near each one.
