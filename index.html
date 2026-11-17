@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17e">
+<meta name="opem-build" content="2026-11-17f">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1333,13 +1333,13 @@ function loadRealStays(d){
         var i=0;
         (function next(){
           if(i>=spots.length) return end();
-          var sp=spots[i++], t=0, fired=false;
+          var sp=spots[i++], t=0, iv=0, fired=false;
           function got(){
-            if(fired) return; fired=true; clearTimeout(t);
+            if(fired) return; fired=true; clearTimeout(t); clearInterval(iv);
             var near=[]; try{
               m.querySourceFeatures("o",{sourceLayer:"poi"}).forEach(function(f){
                 var pr=f.properties||{}, nm=String(pr["name:en"]||pr["name:latin"]||pr.name||"").trim(), co=f.geometry&&f.geometry.coordinates;
-                if(pr.class!=="lodging"||!nm||nm.length>48||!/[A-Za-z]{3}/.test(nm)||!co||seen[nm.toLowerCase()]) return;
+                if(pr.class!=="lodging"||!nm||nm.length>48||!/[A-Za-z]{3}/.test(nm)||/[^\u0000-\u024F\u2010-\u2027]/.test(nm)||!co||seen[nm.toLowerCase()]) return;
                 var dy=co[1]-sp.ll[1], dx=(co[0]-sp.ll[0])*Math.cos(sp.ll[1]*Math.PI/180), dist=Math.sqrt(dx*dx+dy*dy)*111;   // km
                 if(dist>3) return;
                 near.push({id:String(f.id||nm),name:nm,lat:+co[1].toFixed(5),lon:+co[0].toFixed(5),type:pr.subclass||"hotel",stars:0,area:sp.area,v:(pr.rank||30)+dist*6});
@@ -1354,6 +1354,7 @@ function loadRealStays(d){
             next();
           }
           m.jumpTo({center:sp.ll}); m.once("idle",got); t=setTimeout(got,7000);
+          var n0=0; iv=setInterval(function(){ try{ if(m.isStyleLoaded()&&m.areTilesLoaded()){ if(++n0>=2) got(); } else n0=0; }catch(e){} },200);   // "idle" can be late on a busy or background page
         })();
       });
     });
