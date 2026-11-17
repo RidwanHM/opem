@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17g">
+<meta name="opem-build" content="2026-11-17h">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1060,6 +1060,11 @@ function smooth(v,a,b){var t=clamp((v-a)/(b-a),0,1);return t*t*(3-2*t);}
 function scaleAt(z){return kG*Math.pow(kP/kG,z);}
 // The normal globe starts closer in than the whole-planet view and cannot be zoomed out past that. The Visited globe and journeys keep the full planet.
 function zHome(){ return Math.log(1.55)/Math.log(kP/kG); }
+// How far north and south the normal globe can be tilted. Tight at globe level, opening up as you zoom in so far-north and far-south cities stay reachable.
+function latLim(){
+  if(visitMode||(typeof J!=="undefined"&&J.on)) return [-80,80];
+  var t=smooth(view.z,zHome(),zHome()+.12); return [-38-42*t,58+22*t];
+}
 function zFloor(){ return visitMode||(typeof J!=="undefined"&&J.on)?-0.06:zHome(); }
 
 function resize(){
@@ -1227,7 +1232,7 @@ function render(){
 var anim=0;
 function flyTo(lon,lat,z,ms){
   endVisitAnim(); cancelAnimationFrame(anim); stopGlide();
-  if(!visitMode&&!(typeof J!=="undefined"&&J.on)) z=Math.max(z,zHome());
+  if(!visitMode&&!(typeof J!=="undefined"&&J.on)){ z=Math.max(z,zHome()); var lt=smooth(z,zHome(),zHome()+.12); lat=clamp(lat,-38-42*lt,58+22*lt); }
   if(reduce||!ms){ view.lon=lon; view.lat=lat; view.z=z; draw(); return; }
   var s={lon:view.lon,lat:view.lat,z:view.z}, d=((lon-s.lon+540)%360)-180, t0=performance.now();
   var zoomingIn=z>s.z;
@@ -1254,7 +1259,7 @@ function startGlide(){
   if(sp>cap){ glide.vx*=cap/sp; glide.vy*=cap/sp; }
   (function step(now){
     var dt=Math.min(40,now-last), k=Math.exp(-dt/420); last=now;
-    view.lon+=glide.vx*dt; var lat=view.lat+glide.vy*dt; view.lat=clamp(lat,-80,80); if(lat!==view.lat) glide.vy=0;
+    view.lon+=glide.vx*dt; var lat=view.lat+glide.vy*dt; var gl=latLim(); view.lat=clamp(lat,gl[0],gl[1]); if(lat!==view.lat) glide.vy=0;
     glide.vx*=k; glide.vy*=k; draw();
     glide.raf=Math.hypot(glide.vx,glide.vy)*proj.scale()*RAD>0.012?requestAnimationFrame(step):0;
   })(last);
@@ -1270,7 +1275,7 @@ canvas.addEventListener("pointermove",function(e){
   if(ids.length===1){
     var dx=e.clientX-p.x, dy=e.clientY-p.y, f=(180/Math.PI)/proj.scale();
     var dLon=-dx*f/Math.max(.25,Math.cos(view.lat*RAD)), dLat=dy*f, now=performance.now(), dt=Math.max(1,now-glide.t);
-    view.lon+=dLon; view.lat=clamp(view.lat+dLat,-80,80);
+    var dl=latLim(); view.lon+=dLon; view.lat=clamp(view.lat+dLat,dl[0],dl[1]);
     glide.vx=glide.vx*.55+(dLon/dt)*.45; glide.vy=glide.vy*.55+(dLat/dt)*.45; glide.t=now;
     p.x=e.clientX; p.y=e.clientY;
   }else{
@@ -1290,7 +1295,7 @@ function up(e){
 }
 canvas.addEventListener("pointerup",up); canvas.addEventListener("pointercancel",up);
 canvas.addEventListener("wheel",function(e){ e.preventDefault(); cancelAnimationFrame(anim); stopGlide(); zoomBy(-e.deltaY*0.0011); draw(); },{passive:false});
-function zoomBy(dz){ view.z=clamp(view.z+dz,zFloor(),visitMode?.32:zMax); }
+function zoomBy(dz){ view.z=clamp(view.z+dz,zFloor(),visitMode?.32:zMax); var l=latLim(); view.lat=clamp(view.lat,l[0],l[1]); }
 
 /* ---------- pins, chips, card ---------- */
 var pinsEl=document.getElementById("pins"), destsEl=document.getElementById("dests");
