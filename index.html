@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17i">
+<meta name="opem-build" content="2026-11-17j">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1063,7 +1063,7 @@ function zHome(){ return Math.log(1.55)/Math.log(kP/kG); }
 // How far north and south the normal globe can be tilted. Tight at globe level, opening up as you zoom in so far-north and far-south cities stay reachable.
 function latLim(){
   if(visitMode||(typeof J!=="undefined"&&J.on)) return [-80,80];
-  var t=smooth(view.z,zHome(),zHome()+.12); return [-38-42*t,46+34*t];
+  var t=smooth(view.z,zHome(),zHome()+.12); return [-38-42*t,41+39*t];
 }
 function zFloor(){ return visitMode||(typeof J!=="undefined"&&J.on)?-0.06:zHome(); }
 
@@ -1100,7 +1100,7 @@ function projAll(polys){ return polys.map(function(r){return r.map(proj);}); }
 
 var raf=0;
 function draw(){ if(!raf) raf=requestAnimationFrame(render); }
-var pinTimer=0, pinView="", pinMoveT=0, nameCont=null, nameContT=0;
+var pinTimer=0, pinView="", pinMoveT=0, nameCont=null, nameContT=0, glowA=0, glowCont=null, glowT=0, glowRaf=0;
 function render(){
   raf=0; if(!W) return;
   var z=view.z, nr=nearest(), nd=nr.d, rel=z/nd.z1;
@@ -1127,6 +1127,14 @@ function render(){
     ctx.fillStyle="#2e8c74"; ctx.fill();
     ctx.strokeStyle="rgba(134,214,187,.5)"; ctx.lineWidth=.6; ctx.stroke();
     ctx.globalAlpha=1;
+    // the continent you tapped glows a little brighter than the rest; it fades in and out
+    var gNow=performance.now(), gDt=Math.min(80,gNow-(glowT||gNow)), gTo=nameCont&&!visitMode?1:0; glowT=gNow;
+    if(nameCont) glowCont=nameCont;
+    if(glowA!==gTo){ glowA=reduce?gTo:clamp(glowA+(gTo>glowA?1:-1)*gDt/450,0,1); if(glowA!==gTo&&!glowRaf) glowRaf=requestAnimationFrame(function(){ glowRaf=0; draw(); }); } else glowT=0;
+    if(glowA>0&&glowCont&&countries.length){
+      ctx.globalAlpha=worldA*(1-vt)*glowA; ctx.beginPath(); countries.forEach(function(c){ if(c.f&&c.f.cont===glowCont) path(c.geom); });
+      ctx.fillStyle="#43b392"; ctx.fill(); ctx.strokeStyle="rgba(190,245,222,.55)"; ctx.lineWidth=.7; ctx.stroke(); ctx.globalAlpha=1;
+    }
   }
   if(worldA>0&&vt>0){
     ctx.globalAlpha=worldA*vt; ctx.beginPath(); path(land);
@@ -1232,7 +1240,7 @@ function render(){
 var anim=0;
 function flyTo(lon,lat,z,ms){
   endVisitAnim(); cancelAnimationFrame(anim); stopGlide();
-  if(!visitMode&&!(typeof J!=="undefined"&&J.on)){ z=Math.max(z,zHome()); var lt=smooth(z,zHome(),zHome()+.12); lat=clamp(lat,-38-42*lt,46+34*lt); }
+  if(!visitMode&&!(typeof J!=="undefined"&&J.on)){ z=Math.max(z,zHome()); var lt=smooth(z,zHome(),zHome()+.12); lat=clamp(lat,-38-42*lt,41+39*lt); }
   if(reduce||!ms){ view.lon=lon; view.lat=lat; view.z=z; draw(); return; }
   var s={lon:view.lon,lat:view.lat,z:view.z}, d=((lon-s.lon+540)%360)-180, t0=performance.now();
   var zoomingIn=z>s.z;
