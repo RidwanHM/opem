@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17c">
+<meta name="opem-build" content="2026-11-17d">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1301,7 +1301,7 @@ DESTS.forEach(function(d){
   r.addEventListener("click",function(){ goDest(d); }); destsEl.appendChild(r);
 });
 document.getElementById("destCount").textContent=DESTS.length;
-var RSTAYS=[], STAYWORD={hotel:"Hotel",hostel:"Hostel",guest_house:"Guest house",apartment:"Apartment",resort:"Resort"};
+var RSTAYS=[], STAYWORD={hotel:"Hotel",hostel:"Hostel",guest_house:"Guest house",apartment:"Apartment",resort:"Resort",motel:"Motel",dormitory:"Hostel"};
 function makePin(p){
   var b=document.createElement("button");
   b.type="button"; b.className="pin "+(p.cat==="stay"?"stay":"")+(p.model?" model":""); b.style.setProperty("--c",CATS[p.cat].color);
@@ -1315,34 +1315,56 @@ PLACES.forEach(makePin);
 /* Real places to stay from OpenStreetMap. Pilot: only the cities listed here. */
 var REALSTAY={phuket:1};
 function glanceNote(d){
-  document.getElementById("glanceNote").textContent=d.realStays?"Tap a pin to open it. The map, the landmarks and the places to stay are real (stays from OpenStreetMap, no prices yet); food, nightlife, prices and ratings are sample data.":d.real?"Tap a pin to open it. The map and the landmarks are real; stays, food, nightlife, prices and ratings are sample data.":"Tap a pin or a building to open it. Roads and buildings are hand-drawn, and prices and ratings are sample data.";
+  document.getElementById("glanceNote").textContent=d.realStays?"Tap a pin to open it. The map, the landmarks and the places to stay are real (from OpenStreetMap, no prices yet); food, nightlife, prices and ratings are sample data.":d.real?"Tap a pin to open it. The map and the landmarks are real; stays, food, nightlife, prices and ratings are sample data.":"Tap a pin or a building to open it. Roads and buildings are hand-drawn, and prices and ratings are sample data.";
 }
 function loadRealStays(d){
   if(!REALSTAY[d.id]||d.staysAsked||d.realStays||!/^https?:$/.test(location.protocol)||window.claude) return; d.staysAsked=true;
-  var sl=(d.spanLat||.3)/2, so=(d.spanLon||.3)/2, box=[d.c[1]-sl,d.c[0]-so,d.c[1]+sl,d.c[0]+so].map(function(v){ return v.toFixed(3); });
-  var ck="opem.st."+d.id, cached=null; try{ var c=JSON.parse(localStorage.getItem(ck)||"null"); if(c&&Date.now()-c.t<6048e5&&c.s&&c.s.length>=4) cached=c.s; }catch(e){}
-  // Opem's own server first (cached); if that fails, ask OpenStreetMap's Overpass straight from the browser
-  function direct(){
-    var f='["tourism"~"^(hotel|guest_house|hostel|apartment|resort)$"]["name"]', q="[out:json][timeout:20];(node"+f+"("+box.join(",")+");way"+f+"("+box.join(",")+"););out center tags 400;";
-    return fetch("https://overpass-api.de/api/interpreter",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:"data="+encodeURIComponent(q)}).then(function(r){ return r.json(); }).then(function(j){
-      var seen={}, all=(j.elements||[]).map(function(el){
-        var t=el.tags||{}, la=el.lat!=null?el.lat:el.center&&el.center.lat, lo=el.lon!=null?el.lon:el.center&&el.center.lon, nm=String(t["name:en"]||t.name||"").trim(), st=parseInt(t.stars,10);
-        if(!nm||nm.length>60||!/[A-Za-z]/.test(nm)||!isFinite(la)||!isFinite(lo)||seen[nm.toLowerCase()]) return null; seen[nm.toLowerCase()]=1;
-        return {id:el.type.charAt(0)+el.id,name:nm,lat:la,lon:lo,type:t.tourism,stars:st>=1&&st<=5?st:0,score:(st?2:0)+(t.website||t["contact:website"]?1:0)+(t.wikidata?2:0)};
-      }).filter(Boolean).sort(function(a,b){ return b.score-a.score; }).slice(0,120), picks=[];
-      while(all.length&&picks.length<14){
-        var bi=0,bv=-1; all.forEach(function(c,i){ var near=1; picks.forEach(function(p){ var dy=p.lat-c.lat, dx=(p.lon-c.lon)*Math.cos(c.lat*Math.PI/180); near=Math.min(near,dx*dx+dy*dy); }); var v=near*(1+c.score); if(v>bv){ bv=v; bi=i; } });
-        picks.push(all.splice(bi,1)[0]);
-      }
-      return {ok:true,stays:picks};
+  var ck="opem.st2."+d.id, cached=null; try{ var c=JSON.parse(localStorage.getItem(ck)||"null"); if(c&&Date.now()-c.t<6048e5&&c.s&&c.s.length>=4) cached=c.s; }catch(e){}
+  // The street map's own data (OpenStreetMap, via OpenFreeMap) already holds every hotel. Read them from a small hidden map
+  // placed over each sample stay in turn, and keep the best-known few near each one.
+  function scan(){
+    return new Promise(function(done){
+      loadMapLib(function(){
+        var spots=d.places.filter(function(p){ return p.cat==="stay"; }), picks=[], seen={}, div=document.createElement("div"), m;
+        div.style.cssText="position:fixed;left:-4000px;top:0;width:1024px;height:1024px;pointer-events:none"; document.body.appendChild(div);
+        function end(){ try{ m.remove(); }catch(e){} div.remove(); done({ok:true,stays:picks}); }
+        try{
+          m=new maplibregl.Map({container:div,style:{version:8,sources:{o:{type:"vector",url:"https://tiles.openfreemap.org/planet"}},layers:[{id:"p",type:"circle",source:"o","source-layer":"poi",paint:{"circle-radius":1}}]},center:spots[0].ll,zoom:14.05,attributionControl:false,pixelRatio:1,fadeDuration:0,interactive:false});
+        }catch(e){ div.remove(); return done(null); }
+        var i=0;
+        (function next(){
+          if(i>=spots.length) return end();
+          var sp=spots[i++], t=0, fired=false;
+          function got(){
+            if(fired) return; fired=true; clearTimeout(t);
+            var near=[]; try{
+              m.querySourceFeatures("o",{sourceLayer:"poi"}).forEach(function(f){
+                var pr=f.properties||{}, nm=String(pr["name:en"]||pr["name:latin"]||pr.name||"").trim(), co=f.geometry&&f.geometry.coordinates;
+                if(pr.class!=="lodging"||!nm||nm.length>48||!/[A-Za-z]{3}/.test(nm)||!co||seen[nm.toLowerCase()]) return;
+                var dy=co[1]-sp.ll[1], dx=(co[0]-sp.ll[0])*Math.cos(sp.ll[1]*Math.PI/180), dist=Math.sqrt(dx*dx+dy*dy)*111;   // km
+                if(dist>3) return;
+                near.push({id:String(f.id||nm),name:nm,lat:+co[1].toFixed(5),lon:+co[0].toFixed(5),type:pr.subclass||"hotel",stars:0,area:sp.area,v:(pr.rank||30)+dist*6});
+              });
+            }catch(e){}
+            near.sort(function(a,b){ return a.v-b.v; });
+            var n=0; near.forEach(function(c){
+              if(n>=3||seen[c.name.toLowerCase()]) return;
+              for(var k=0;k<picks.length;k++){ var q=picks[k]; if(Math.abs(q.lat-c.lat)<.0018&&Math.abs(q.lon-c.lon)<.0018) return; }   // not on top of another pin
+              seen[c.name.toLowerCase()]=1; delete c.v; picks.push(c); n++;
+            });
+            next();
+          }
+          m.jumpTo({center:sp.ll}); m.once("idle",got); t=setTimeout(got,7000);
+        })();
+      });
     });
   }
-  (cached?Promise.resolve({ok:true,stays:cached}):fetch("api/stays?s="+box[0]+"&w="+box[1]+"&n="+box[2]+"&e="+box[3]).then(function(r){ return r.json(); }).then(function(j){ if(!j||!j.ok||!j.stays||j.stays.length<4) throw 0; return j; }).catch(direct)).then(function(j){
+  (cached?Promise.resolve({ok:true,stays:cached}):scan()).then(function(j){
     if(!j||!j.ok||!j.stays||j.stays.length<4){ d.staysAsked=false; return; }
     if(!cached){ try{ localStorage.setItem(ck,JSON.stringify({t:Date.now(),s:j.stays})); }catch(e){} }
     d.realStays=j.stays.map(function(x){
-      var w=STAYWORD[x.type]||"Hotel";
-      var p={id:"r_"+d.id+"_"+x.id,osm:true,cat:"stay",name:x.name,ll:[x.lon,x.lat],area:d.name,dest:d,price:null,rating:null,short:w==="Guest house"?"Guest":w==="Apartment"?"Apt":w,
+      var w=/resort/i.test(x.name)?"Resort":/hostel/i.test(x.name)?"Hostel":/villa/i.test(x.name)?"Villa":STAYWORD[x.type]||"Hotel";
+      var p={id:"r_"+d.id+"_"+x.id,osm:true,cat:"stay",name:x.name,ll:[x.lon,x.lat],area:x.area||d.name,dest:d,price:null,rating:null,short:w==="Guest house"?"Guest":w==="Apartment"?"Apt":w,
         kind:w+(x.stars?" · "+x.stars+" stars":""),blurb:"A real place to stay in "+d.name+", from OpenStreetMap. Opem has no prices, ratings or photos for it yet, so check those on Booking.com."};
       byId[p.id]=p; RSTAYS.push(p); makePin(p); return p;
     });
@@ -1378,7 +1400,7 @@ function select(id){
   var price=p.osm?"":p.cat==="stay"?"<b>NOK "+kr(p.price)+"</b> per night":(p.price?"About <b>"+p.dest.cur+" "+kr(p.price)+"</b> per person":"");
   card.innerHTML='<div class="card-head"><div><span class="tag" style="--c:'+CATS[p.cat].color+'"><span class="dot"></span>'+esc(CATS[p.cat].label)+" · "+esc(p.area)+'</span><h1>'+esc(p.name)+'</h1></div><button class="x" type="button" id="cardX" aria-label="Close place">&times;</button></div>'+
     '<p class="meta">'+esc(p.kind)+" · "+(p.osm?"real place · no price in Opem yet":"<b>"+p.rating.toFixed(1)+"</b> rating"+(price?" · "+price:"")+" · sample data")+"</p>"+
-    '<p class="blurb">'+esc(p.blurb)+"</p>"+(p.cat==="stay"?'<p class="note" style="margin:0 0 10px"><a class="gf" style="margin:0" href="'+esc(bookingUrl(p.dest,null,null,2,p.osm?p.name:p.area))+'" target="_blank" rel="noopener">'+(p.osm?"Find "+esc(p.name):"See real stays in "+esc(p.area&&p.area!==p.dest.name?p.area:p.dest.name))+" on Booking.com</a></p>":"")+
+    '<p class="blurb">'+esc(p.blurb)+"</p>"+(p.cat==="stay"?'<p class="note" style="margin:0 0 10px"><a class="gf" style="margin:0" href="'+esc(bookingUrl(p.dest,null,null,2,p.osm?p.name+(p.area&&p.area!==p.dest.name?", "+p.area:""):p.area))+'" target="_blank" rel="noopener">'+(p.osm?"Find "+esc(p.name):"See real stays in "+esc(p.area&&p.area!==p.dest.name?p.area:p.dest.name))+" on Booking.com</a></p>":"")+
     '<div class="actions"><button class="btn primary" type="button" id="cardAsk">Ask Opem about it</button><button class="btn" type="button" id="cardSave" aria-pressed="'+saved+'">'+(saved?"Saved to trip":"Save to trip")+"</button></div>";
   card.hidden=false; glance.hidden=true;
   document.getElementById("cardX").onclick=function(){ select(null); };
@@ -2155,8 +2177,8 @@ function planText(pl){
     pl.days.map(function(d){return d.t+": "+d.x;}).join(" ")+" Home: "+(pl.back?fl(pl.back):"no flight")+". Estimated total NOK "+pl.total+" (sample prices).";
 }
 /* live data on the hosted site: real flight prices, real photos, and Booking.com searches */
-var live={flights:false,photo:false,stays:false};
-if(/^https?:$/.test(location.protocol)&&!window.claude){ ["flights","photo","stays"].forEach(function(k){ try{ fetch("api/"+k+"?ping=1").then(function(r){ return r.json(); }).then(function(j){ live[k]=!!(j&&j.ok); if(k==="photo"&&live.photo&&state.dest) cityPhoto(state.dest); }).catch(function(){}); }catch(e){} }); }
+var live={flights:false,photo:false};
+if(/^https?:$/.test(location.protocol)&&!window.claude){ ["flights","photo"].forEach(function(k){ try{ fetch("api/"+k+"?ping=1").then(function(r){ return r.json(); }).then(function(j){ live[k]=!!(j&&j.ok); if(k==="photo"&&live.photo&&state.dest) cityPhoto(state.dest); }).catch(function(){}); }catch(e){} }); }
 function bookingUrl(d,checkin,checkout,pax,area){
   var u="https://www.booking.com/searchresults.html?ss="+encodeURIComponent((area&&area!==d.name?area+", ":"")+d.name+", "+d.country);
   if(checkin&&checkout) u+="&checkin="+iso(checkin)+"&checkout="+iso(checkout);
