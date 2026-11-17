@@ -8,11 +8,19 @@ module.exports = async function handler(req, res) {
     return res.status(400).json({ error: "bad_request" });
   const box = [s, w, n, e].map(v => v.toFixed(4)).join(",");
   const filter = '["tourism"~"^(hotel|guest_house|hostel|apartment|resort)$"]["name"]';
-  const query = "[out:json][timeout:20];(node" + filter + "(" + box + ");way" + filter + "(" + box + "););out center tags 400;";
+  const query = "[out:json][timeout:18];(node" + filter + "(" + box + ");way" + filter + "(" + box + "););out center tags 400;";
   try {
-    const r = await fetch("https://overpass-api.de/api/interpreter", { method: "POST", headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "Opem travel prototype (opem-six.vercel.app)" }, body: "data=" + encodeURIComponent(query) });
-    const j = await r.json().catch(() => null);
-    if (!r.ok || !j || !Array.isArray(j.elements)) return res.status(r.status === 429 ? 429 : 502).json({ error: r.status === 429 ? "rate_limited" : "upstream" });
+    // several public Overpass servers; ask them all and take the first good answer
+    const hosts = ["https://overpass-api.de/api/interpreter", "https://overpass.private.coffee/api/interpreter", "https://overpass.kumi.systems/api/interpreter", "https://maps.mail.ru/osm/tools/overpass/api/interpreter"];
+    const ask = async host => {
+      const r = await fetch(host, { method: "POST", signal: AbortSignal.timeout(22000), headers: { "content-type": "application/x-www-form-urlencoded", "user-agent": "Opem travel prototype (opem-six.vercel.app)" }, body: "data=" + encodeURIComponent(query) });
+      const j = await r.json().catch(() => null);
+      if (!r.ok || !j || !Array.isArray(j.elements) || !j.elements.length) throw new Error(host.split("/")[2] + " " + r.status);
+      return j;
+    };
+    let j;
+    try { j = await Promise.any(hosts.map(ask)); }
+    catch (err) { res.setHeader("Cache-Control", "no-store"); return res.status(502).json({ error: "upstream", detail: (err.errors || [err]).map(x => String(x && x.message || x).slice(0, 80)) }); }
     let all = j.elements.map(el => {
       const t = el.tags || {}, lat = el.lat != null ? el.lat : el.center && el.center.lat, lon = el.lon != null ? el.lon : el.center && el.center.lon;
       const name = String(t["name:en"] || t.name || "").trim();

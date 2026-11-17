@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17b">
+<meta name="opem-build" content="2026-11-17c">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1318,10 +1318,28 @@ function glanceNote(d){
   document.getElementById("glanceNote").textContent=d.realStays?"Tap a pin to open it. The map, the landmarks and the places to stay are real (stays from OpenStreetMap, no prices yet); food, nightlife, prices and ratings are sample data.":d.real?"Tap a pin to open it. The map and the landmarks are real; stays, food, nightlife, prices and ratings are sample data.":"Tap a pin or a building to open it. Roads and buildings are hand-drawn, and prices and ratings are sample data.";
 }
 function loadRealStays(d){
-  if(!REALSTAY[d.id]||!live.stays||d.staysAsked) return; d.staysAsked=true;
-  var sl=(d.spanLat||.3)/2, so=(d.spanLon||.3)/2;
-  fetch("api/stays?s="+(d.c[1]-sl).toFixed(3)+"&w="+(d.c[0]-so).toFixed(3)+"&n="+(d.c[1]+sl).toFixed(3)+"&e="+(d.c[0]+so).toFixed(3)).then(function(r){ return r.json(); }).then(function(j){
+  if(!REALSTAY[d.id]||d.staysAsked||d.realStays||!/^https?:$/.test(location.protocol)||window.claude) return; d.staysAsked=true;
+  var sl=(d.spanLat||.3)/2, so=(d.spanLon||.3)/2, box=[d.c[1]-sl,d.c[0]-so,d.c[1]+sl,d.c[0]+so].map(function(v){ return v.toFixed(3); });
+  var ck="opem.st."+d.id, cached=null; try{ var c=JSON.parse(localStorage.getItem(ck)||"null"); if(c&&Date.now()-c.t<6048e5&&c.s&&c.s.length>=4) cached=c.s; }catch(e){}
+  // Opem's own server first (cached); if that fails, ask OpenStreetMap's Overpass straight from the browser
+  function direct(){
+    var f='["tourism"~"^(hotel|guest_house|hostel|apartment|resort)$"]["name"]', q="[out:json][timeout:20];(node"+f+"("+box.join(",")+");way"+f+"("+box.join(",")+"););out center tags 400;";
+    return fetch("https://overpass-api.de/api/interpreter",{method:"POST",headers:{"content-type":"application/x-www-form-urlencoded"},body:"data="+encodeURIComponent(q)}).then(function(r){ return r.json(); }).then(function(j){
+      var seen={}, all=(j.elements||[]).map(function(el){
+        var t=el.tags||{}, la=el.lat!=null?el.lat:el.center&&el.center.lat, lo=el.lon!=null?el.lon:el.center&&el.center.lon, nm=String(t["name:en"]||t.name||"").trim(), st=parseInt(t.stars,10);
+        if(!nm||nm.length>60||!/[A-Za-z]/.test(nm)||!isFinite(la)||!isFinite(lo)||seen[nm.toLowerCase()]) return null; seen[nm.toLowerCase()]=1;
+        return {id:el.type.charAt(0)+el.id,name:nm,lat:la,lon:lo,type:t.tourism,stars:st>=1&&st<=5?st:0,score:(st?2:0)+(t.website||t["contact:website"]?1:0)+(t.wikidata?2:0)};
+      }).filter(Boolean).sort(function(a,b){ return b.score-a.score; }).slice(0,120), picks=[];
+      while(all.length&&picks.length<14){
+        var bi=0,bv=-1; all.forEach(function(c,i){ var near=1; picks.forEach(function(p){ var dy=p.lat-c.lat, dx=(p.lon-c.lon)*Math.cos(c.lat*Math.PI/180); near=Math.min(near,dx*dx+dy*dy); }); var v=near*(1+c.score); if(v>bv){ bv=v; bi=i; } });
+        picks.push(all.splice(bi,1)[0]);
+      }
+      return {ok:true,stays:picks};
+    });
+  }
+  (cached?Promise.resolve({ok:true,stays:cached}):fetch("api/stays?s="+box[0]+"&w="+box[1]+"&n="+box[2]+"&e="+box[3]).then(function(r){ return r.json(); }).then(function(j){ if(!j||!j.ok||!j.stays||j.stays.length<4) throw 0; return j; }).catch(direct)).then(function(j){
     if(!j||!j.ok||!j.stays||j.stays.length<4){ d.staysAsked=false; return; }
+    if(!cached){ try{ localStorage.setItem(ck,JSON.stringify({t:Date.now(),s:j.stays})); }catch(e){} }
     d.realStays=j.stays.map(function(x){
       var w=STAYWORD[x.type]||"Hotel";
       var p={id:"r_"+d.id+"_"+x.id,osm:true,cat:"stay",name:x.name,ll:[x.lon,x.lat],area:d.name,dest:d,price:null,rating:null,short:w==="Guest house"?"Guest":w==="Apartment"?"Apt":w,
@@ -2138,7 +2156,7 @@ function planText(pl){
 }
 /* live data on the hosted site: real flight prices, real photos, and Booking.com searches */
 var live={flights:false,photo:false,stays:false};
-if(/^https?:$/.test(location.protocol)&&!window.claude){ ["flights","photo","stays"].forEach(function(k){ try{ fetch("api/"+k+"?ping=1").then(function(r){ return r.json(); }).then(function(j){ live[k]=!!(j&&j.ok); if(k==="photo"&&live.photo&&state.dest) cityPhoto(state.dest); if(k==="stays"&&live.stays&&state.dest) loadRealStays(state.dest); }).catch(function(){}); }catch(e){} }); }
+if(/^https?:$/.test(location.protocol)&&!window.claude){ ["flights","photo","stays"].forEach(function(k){ try{ fetch("api/"+k+"?ping=1").then(function(r){ return r.json(); }).then(function(j){ live[k]=!!(j&&j.ok); if(k==="photo"&&live.photo&&state.dest) cityPhoto(state.dest); }).catch(function(){}); }catch(e){} }); }
 function bookingUrl(d,checkin,checkout,pax,area){
   var u="https://www.booking.com/searchresults.html?ss="+encodeURIComponent((area&&area!==d.name?area+", ":"")+d.name+", "+d.country);
   if(checkin&&checkout) u+="&checkin="+iso(checkin)+"&checkout="+iso(checkout);
