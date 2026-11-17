@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-16y">
+<meta name="opem-build" content="2026-11-17a">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1337,7 +1337,7 @@ function select(id){
   var price=p.cat==="stay"?"<b>NOK "+kr(p.price)+"</b> per night":(p.price?"About <b>"+p.dest.cur+" "+kr(p.price)+"</b> per person":"");
   card.innerHTML='<div class="card-head"><div><span class="tag" style="--c:'+CATS[p.cat].color+'"><span class="dot"></span>'+esc(CATS[p.cat].label)+" · "+esc(p.area)+'</span><h1>'+esc(p.name)+'</h1></div><button class="x" type="button" id="cardX" aria-label="Close place">&times;</button></div>'+
     '<p class="meta">'+esc(p.kind)+" · <b>"+p.rating.toFixed(1)+"</b> rating"+(price?" · "+price:"")+" · sample data</p>"+
-    '<p class="blurb">'+esc(p.blurb)+"</p>"+(p.cat==="stay"?'<p class="note" style="margin:0 0 10px"><a class="gf" style="margin:0" href="'+esc(bookingUrl(p.dest))+'" target="_blank" rel="noopener">See real stays in '+esc(p.dest.name)+" on Booking.com</a></p>":"")+
+    '<p class="blurb">'+esc(p.blurb)+"</p>"+(p.cat==="stay"?'<p class="note" style="margin:0 0 10px"><a class="gf" style="margin:0" href="'+esc(bookingUrl(p.dest,null,null,2,p.area))+'" target="_blank" rel="noopener">See real stays in '+esc(p.area&&p.area!==p.dest.name?p.area:p.dest.name)+" on Booking.com</a></p>":"")+
     '<div class="actions"><button class="btn primary" type="button" id="cardAsk">Ask Opem about it</button><button class="btn" type="button" id="cardSave" aria-pressed="'+saved+'">'+(saved?"Saved to trip":"Save to trip")+"</button></div>";
   card.hidden=false; glance.hidden=true;
   document.getElementById("cardX").onclick=function(){ select(null); };
@@ -2116,8 +2116,8 @@ function planText(pl){
 /* live data on the hosted site: real flight prices, real photos, and Booking.com searches */
 var live={flights:false,photo:false};
 if(/^https?:$/.test(location.protocol)&&!window.claude){ ["flights","photo"].forEach(function(k){ try{ fetch("api/"+k+"?ping=1").then(function(r){ return r.json(); }).then(function(j){ live[k]=!!(j&&j.ok); if(k==="photo"&&live.photo&&state.dest) cityPhoto(state.dest); }).catch(function(){}); }catch(e){} }); }
-function bookingUrl(d,checkin,checkout,pax){
-  var u="https://www.booking.com/searchresults.html?ss="+encodeURIComponent(d.name+", "+d.country);
+function bookingUrl(d,checkin,checkout,pax,area){
+  var u="https://www.booking.com/searchresults.html?ss="+encodeURIComponent((area&&area!==d.name?area+", ":"")+d.name+", "+d.country);
   if(checkin&&checkout) u+="&checkin="+iso(checkin)+"&checkout="+iso(checkout);
   return u+"&group_adults="+(pax||2)+"&no_rooms=1";
 }
@@ -2147,7 +2147,7 @@ function renderPlan(pl){
   function row(k,v){ return "<dt>"+esc(k)+"</dt><dd>"+v+"</dd>"; }
   el.innerHTML="<h3>"+esc(pl.title)+'</h3><p class="note">'+esc(pl.sub)+" · flights and prices are sample data</p><dl>"+
     row("Fly out",pl.out?esc(fl(pl.out))+"<br>"+gfLink(pl.from,pl.dest,pl.depart,pl.ret)+'<div class="livefl note" hidden></div>':"No flight needed")+
-    row("Stay",esc(pl.stay.name)+" · "+esc(pl.stay.kind)+" · NOK "+kr(pl.stay.price)+' per night (sample)<br><a class="gf" href="'+esc(bookingUrl(pl.dest,pl.depart,pl.ret,pl.pax))+'" target="_blank" rel="noopener">See real stays for these dates on Booking.com</a>')+
+    row("Stay",esc(pl.stay.name)+" · "+esc(pl.stay.kind)+" · NOK "+kr(pl.stay.price)+' per night (sample)<br><a class="gf" href="'+esc(bookingUrl(pl.dest,pl.depart,pl.ret,pl.pax,pl.stay.area))+'" target="_blank" rel="noopener">See real stays for these dates on Booking.com</a>')+
     row("Airport to your stay",esc(tr(pl.transfer)))+
     row("In "+pl.dest.name,"<ol>"+pl.days.map(function(d){return "<li><b>"+esc(d.t)+"</b>"+esc(d.x)+"</li>";}).join("")+"</ol>")+
     row("Fly home",pl.back?esc(fl(pl.back)):"No flight needed")+
