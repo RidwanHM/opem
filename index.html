@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17j">
+<meta name="opem-build" content="2026-11-17k">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1063,7 +1063,7 @@ function zHome(){ return Math.log(1.55)/Math.log(kP/kG); }
 // How far north and south the normal globe can be tilted. Tight at globe level, opening up as you zoom in so far-north and far-south cities stay reachable.
 function latLim(){
   if(visitMode||(typeof J!=="undefined"&&J.on)) return [-80,80];
-  var t=smooth(view.z,zHome(),zHome()+.12); return [-38-42*t,41+39*t];
+  var t=smooth(view.z,zHome(),zHome()+.12); return [-38-42*t,35+45*t];
 }
 function zFloor(){ return visitMode||(typeof J!=="undefined"&&J.on)?-0.06:zHome(); }
 
@@ -1240,7 +1240,7 @@ function render(){
 var anim=0;
 function flyTo(lon,lat,z,ms){
   endVisitAnim(); cancelAnimationFrame(anim); stopGlide();
-  if(!visitMode&&!(typeof J!=="undefined"&&J.on)){ z=Math.max(z,zHome()); var lt=smooth(z,zHome(),zHome()+.12); lat=clamp(lat,-38-42*lt,41+39*lt); }
+  if(!visitMode&&!(typeof J!=="undefined"&&J.on)){ z=Math.max(z,zHome()); var lt=smooth(z,zHome(),zHome()+.12); lat=clamp(lat,-38-42*lt,35+45*lt); }
   if(reduce||!ms){ view.lon=lon; view.lat=lat; view.z=z; draw(); return; }
   var s={lon:view.lon,lat:view.lat,z:view.z}, d=((lon-s.lon+540)%360)-180, t0=performance.now();
   var zoomingIn=z>s.z;
