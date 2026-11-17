@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17k">
+<meta name="opem-build" content="2026-11-17l">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -201,6 +201,11 @@ body[data-rmap="1"] .pin.model svg{display:block}
 .visit{position:absolute;left:12px;right:12px;bottom:12px;max-width:480px;margin:0 auto;border-radius:22px;padding:16px;max-height:58%;overflow-y:auto;display:none;flex-direction:column;gap:12px;z-index:4}
 body[data-visit] .visit{display:flex;animation:rise .6s .35s ease both}
 body[data-visit] .dock{display:none}
+.eqrow{display:flex;justify-content:flex-end}
+.eqbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--ink,#eef3fa);transition:background .25s,color .25s}
+.eqbtn svg{width:20px;height:20px;display:block}
+.eqbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+body[data-visit] .eqrow{display:none}
 #visitBtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .backworld{margin-left:auto;border:1px solid var(--accent);color:var(--accent);height:34px;padding:0 12px;font-size:13px}
 .backworld:not([hidden]) + .x{margin-left:8px}
@@ -418,6 +423,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
       <button class="pill glass" id="tripsBtn" type="button">Trips <span class="badge" id="tripCount" hidden>0</span></button>
     </div>
     <div class="chips only-dest" id="chips" role="group" aria-label="Show on map"></div>
+    <div class="eqrow only-globe"><button class="eqbtn glass" id="eqBtn" type="button" aria-pressed="false" aria-label="Keep the globe level around the equator" title="Keep the globe level"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 3.5c-2.6 2.4-3.8 5.3-3.8 8.5s1.2 6.1 3.8 8.5M12 3.5c2.6 2.4 3.8 5.3 3.8 8.5s-1.2 6.1-3.8 8.5" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".6"/></svg></button></div>
   </div>
 
   <div class="dock" id="dock">
@@ -1061,9 +1067,16 @@ function scaleAt(z){return kG*Math.pow(kP/kG,z);}
 // The normal globe starts closer in than the whole-planet view and cannot be zoomed out past that. The Visited globe and journeys keep the full planet.
 function zHome(){ return Math.log(1.55)/Math.log(kP/kG); }
 // How far north and south the normal globe can be tilted. Tight at globe level, opening up as you zoom in so far-north and far-south cities stay reachable.
+// "Level" button: at globe level the globe stays centred on the band around the equator and only spins sideways.
+var EQ_LAT=14, eqLock=false; try{ eqLock=localStorage.getItem("opem.eqlock")==="1"; }catch(e){}
+function latLimAt(z){
+  var t=smooth(z,zHome(),zHome()+.12);
+  if(eqLock) return [EQ_LAT-(EQ_LAT+80)*t,EQ_LAT+(80-EQ_LAT)*t];
+  return [-38-42*t,35+45*t];
+}
 function latLim(){
   if(visitMode||(typeof J!=="undefined"&&J.on)) return [-80,80];
-  var t=smooth(view.z,zHome(),zHome()+.12); return [-38-42*t,35+45*t];
+  return latLimAt(view.z);
 }
 function zFloor(){ return visitMode||(typeof J!=="undefined"&&J.on)?-0.06:zHome(); }
 
@@ -1240,7 +1253,7 @@ function render(){
 var anim=0;
 function flyTo(lon,lat,z,ms){
   endVisitAnim(); cancelAnimationFrame(anim); stopGlide();
-  if(!visitMode&&!(typeof J!=="undefined"&&J.on)){ z=Math.max(z,zHome()); var lt=smooth(z,zHome(),zHome()+.12); lat=clamp(lat,-38-42*lt,35+45*lt); }
+  if(!visitMode&&!(typeof J!=="undefined"&&J.on)){ z=Math.max(z,zHome()); var lt=latLimAt(z); lat=clamp(lat,lt[0],lt[1]); }
   if(reduce||!ms){ view.lon=lon; view.lat=lat; view.z=z; draw(); return; }
   var s={lon:view.lon,lat:view.lat,z:view.z}, d=((lon-s.lon+540)%360)-180, t0=performance.now();
   var zoomingIn=z>s.z;
@@ -3114,7 +3127,15 @@ function fromHash(jump){
 syncPins(); syncTrips();
 window.addEventListener("resize",resize);
 window.addEventListener("hashchange",function(){ fromHash(false); });
-resize(); view.z=Math.max(view.z,zHome()); fromHash(true);
+resize(); view.z=Math.max(view.z,zHome()); if(eqLock) view.lat=EQ_LAT;
+(function(){
+  var b=document.getElementById("eqBtn"); b.setAttribute("aria-pressed",String(eqLock));
+  b.addEventListener("click",function(){
+    eqLock=!eqLock; b.setAttribute("aria-pressed",String(eqLock)); try{ localStorage.setItem("opem.eqlock",eqLock?"1":"0"); }catch(e){}
+    if(eqLock&&!state.dest&&!visitMode){ nameCont=null; flyTo(view.lon,EQ_LAT,zHome(),800); }
+  });
+})();
+fromHash(true);
 if(document.fonts&&document.fonts.ready) document.fonts.ready.then(draw);
 })();
 </script>
