@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-17l">
+<meta name="opem-build" content="2026-11-18a">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -174,10 +174,33 @@ body[data-rmap="1"] .pin.model svg{display:block}
 .msg .btn{display:block;margin-top:9px;height:34px;font-size:13px}
 .sugg{display:flex;gap:8px;flex-wrap:wrap;padding:0 16px 10px}
 .sugg button{border:1px solid var(--line);border-radius:999px;padding:7px 12px;font-size:13px;color:var(--ink)}
-.composer{display:flex;gap:8px;padding:10px 12px 14px;border-top:1px solid var(--line)}
-.composer input{flex:1;min-width:0;height:44px;border-radius:999px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;padding:0 15px}
-.composer input::placeholder{color:var(--muted)}
-.composer button{flex:none;height:44px;padding:0 17px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-weight:700}
+.composer{padding:8px 10px calc(10px + env(safe-area-inset-bottom,0px));border-top:1px solid var(--line)}
+.cbox{border:1px solid var(--line);background:rgba(255,255,255,.06);border-radius:24px;padding:8px 8px 6px 14px;display:flex;flex-direction:column;gap:2px;transition:border-color .2s}
+.cbox:focus-within{border-color:rgba(255,178,62,.55)}
+.cbox textarea{display:block;width:100%;resize:none;border:0;background:none;color:var(--ink);font:inherit;font-size:16px;line-height:1.4;height:28px;max-height:150px;outline:none !important;box-shadow:none !important;padding:3px 0;overflow-y:auto}
+.cbox textarea::placeholder{color:var(--muted)}
+.crow{display:flex;align-items:center;gap:6px;margin-left:-6px}
+.cbtn{flex:none;width:36px;height:36px;border-radius:50%;display:grid;place-items:center;color:var(--ink);transition:background .2s,color .2s,opacity .2s,transform .15s}
+.cbtn svg{width:20px;height:20px;display:block}
+.cbtn:active{transform:scale(.92)}
+.cplus{border:1px solid var(--line)}
+.cplus:hover,.cmic:hover{background:rgba(255,255,255,.08)}
+.csend{background:var(--accent);color:var(--accent-ink)}
+.csend[hidden],.cmic[hidden]{display:none}
+.cmic.on{background:#e5484d;color:#fff;animation:micp 1.3s ease-in-out infinite}
+@keyframes micp{0%,100%{box-shadow:0 0 0 0 rgba(229,72,77,.55)}50%{box-shadow:0 0 0 7px rgba(229,72,77,0)}}
+.chint{flex:1;min-width:0;font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:4px}
+.cthumbs{display:flex;gap:8px;padding:2px 0 6px;overflow-x:auto}
+.cthumbs[hidden]{display:none}
+.cthumb{position:relative;flex:none;width:60px;height:60px;border-radius:12px;overflow:hidden;border:1px solid var(--line)}
+.cthumb img{width:100%;height:100%;object-fit:cover;display:block}
+.cthumb button{position:absolute;top:3px;right:3px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.65);color:#fff;font-size:13px;line-height:20px;text-align:center}
+.msg .pics{display:flex;gap:6px;flex-wrap:wrap}
+.msg .pics:not(:last-child){margin-bottom:7px}
+.msg.me.pk{background:none;padding:0}
+.msg .pics img{width:96px;height:96px;object-fit:cover;border-radius:11px;display:block}
+.msg .note{display:block;font-size:12.5px;color:var(--muted);margin-bottom:6px}
+@media (max-width:900px){ input[type=text],input[type=search],input[type=number],input[type=email],textarea,select{font-size:16px !important} }
 .sugg{max-height:40%;overflow-y:auto}
 .sugg button{text-align:left}
 .sugg button[aria-pressed="true"],.sugg button.go{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-weight:700}
@@ -459,8 +482,17 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
     <div class="body" id="log"></div>
     <div class="sugg" id="sugg"></div>
     <form class="composer" id="composer" autocomplete="off">
-      <input id="chatInput" type="text" placeholder="Ask about a destination…" aria-label="Message to Opem">
-      <button type="submit">Send</button>
+      <div class="cbox">
+        <div class="cthumbs" id="cThumbs" hidden></div>
+        <textarea id="chatInput" rows="1" placeholder="Ask Opem anything…" aria-label="Message to Opem" enterkeyhint="send"></textarea>
+        <div class="crow">
+          <button type="button" class="cbtn cplus" id="cPlus" aria-label="Add photos" title="Add photos"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg></button>
+          <input type="file" id="cFile" accept="image/*" multiple hidden>
+          <span class="chint" id="cHint"></span>
+          <button type="button" class="cbtn cmic" id="cMic" aria-label="Talk to Opem" title="Talk to Opem" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3" fill="none" stroke="currentColor" stroke-width="1.9"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round"/></svg></button>
+          <button type="submit" class="cbtn csend" id="cSend" aria-label="Send"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5M6 11l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+        </div>
+      </div>
     </form>
   </section>
 
@@ -2061,12 +2093,23 @@ function demoAnswer(q){
   out.chips=[{label:"Where is good in Spain?",say:"Where is good in Spain?"},{label:"Somewhere cheap and warm",say:"Somewhere cheap and warm"},{label:"Surprise me",say:"Surprise me with an idea"}];
   return out;
 }
-function send(text){
-  text=(text||"").trim(); if(!text||busy) return;
-  sugg.hidden=true; bubble(text,"me"); history_.push({role:"user",content:text});
+function addPics(el,imgs){
+  var w=document.createElement("div"); w.className="pics";
+  imgs.forEach(function(im){ var i=document.createElement("img"); i.src=im.url; i.alt="Your photo"; w.appendChild(i); });
+  el.insertBefore(w,el.firstChild); log.scrollTop=log.scrollHeight;
+}
+function mdLite(t){   // the AI may use "- " lists and **bold**; everything else is plain text
+  return esc(t).replace(/\*\*([^*\n]{1,80})\*\*/g,"<b>$1</b>").replace(/^\s*[-*•] /gm,"• ");
+}
+function send(text,imgs){
+  text=(text||"").trim(); imgs=imgs||[]; if((!text&&!imgs.length)||busy) return;
+  sugg.hidden=true; var me=bubble(text,"me"); if(imgs.length){ addPics(me,imgs); if(!text) me.classList.add("pk"); }
+  if(!text) text="What do you see in this photo? Where is it, and where could I go for something like it?";
+  history_.push({role:"user",content:text+(imgs.length?" (sent "+imgs.length+" photo"+(imgs.length>1?"s":"")+")":"")});
   var el=bubble("Thinking…","ai"), shown=[];
   function finish(answer,ids){ setMsg(el,answer); history_.push({role:"assistant",content:answer}); addShow(el,ids); busy=false; }
-  if(!sampleFn&&remoteAI) return remoteSend(text,finish);
+  if(!sampleFn&&remoteAI) return remoteSend(text,imgs,el);
+  if(imgs.length){ finish("I can only look at photos on the live Opem site. Tell me in words what you're after and I'll help.",[]); return; }
   if(!sampleFn){ var d=demoAnswer(text); finish(d.text,d.ids); demoAfter(d); return; }
   busy=true;
   var start=Math.max(0,history_.length-9); if(history_[start].role!=="user") start++;
@@ -2086,31 +2129,48 @@ function send(text){
     finish((err&&err.code==="rate_limited"?"The assistant is busy right now, so here is a built-in answer. ":"")+d.text,d.ids); demoAfter(d);
   });
 }
-/* the real AI on the hosted site: a server function (api/chat) holds the key and the personality */
-var remoteAI=false;
+/* the real AI on the hosted site: a server function (api/chat) holds the key and the personality, and streams the answer */
+var remoteAI=!sampleFn&&/^https?:$/.test(location.protocol)&&!/claude/.test(location.hostname);
 if(!sampleFn&&/^https?:$/.test(location.protocol)){ try{ fetch("api/chat").then(function(r){ return r.json(); }).then(function(j){ remoteAI=!!(j&&j.ok); setStatus(); }).catch(function(){}); }catch(e){} }
-function remoteSend(text,finish){
+function remoteSend(text,imgs,el){
   var focus=findDests(" "+text.toLowerCase()+" ")[0]||brain.lastDest||state.dest||null; if(focus) brain.lastDest=focus;
   var ctx="Today: "+iso(new Date())+". The traveller usually flies from Oslo.\n"+(state.dest?"They are looking at the "+state.dest.name+" map.\n":"They are looking at the globe.\n")+
-    (chat.plan?"Their current plan: "+planText(chat.plan).slice(0,500)+"\n":"")+
+    (chat.plan?"Their current plan: "+planText(chat.plan).slice(0,600)+"\n":"")+
     "Cities on Opem's map (id: name, country): "+DESTS.map(function(d){ return d.id+": "+d.name+", "+d.country; }).join("; ")+"\n"+
-    (focus?"Sample places in "+focus.name+" (id | category | name | area):\n"+focus.places.map(function(p){ return p.id+" | "+CATS[p.cat].label+" | "+p.name+" | "+p.area; }).join("\n"):"");
+    (focus?"Places in "+focus.name+" (id | category | name | area | details):\n"+focus.places.filter(function(p){ return !p.hide; }).map(function(p){ return p.id+" | "+CATS[p.cat].label+" | "+p.name+" | "+p.area+" | "+(p.kind||"")+" | sample"; }).join("\n")+
+      (focus.realStays?"\n"+focus.realStays.map(function(p){ return p.id+" | Stay | "+p.name+" | "+p.area+" | "+p.kind+" | real place, no price"; }).join("\n"):""):"");
   busy=true;
-  function fallback(note){ var d=demoAnswer(text); finish((note||"")+d.text,d.ids); demoAfter(d); }
-  fetch("api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify({messages:history_.slice(-10),context:ctx})})
-  .then(function(r){ return r.json().then(function(j){ return {ok:r.ok,status:r.status,j:j}; }); })
-  .then(function(o){
-    if(!o.ok||!o.j||!o.j.text){ if(o.status===503) remoteAI=false, setStatus(); return fallback(o.status===429?"I've been chatting a lot, so here's a quick one from memory. ":""); }
-    var act={}, clean=o.j.text.replace(/\[\[\s*(plan|show|go)\s*:\s*([^\]]*)\]\]/gi,function(m,k,v){ act[k.toLowerCase()]=v.trim(); return ""; }).trim();
-    var ids=(act.show||"").split(/[\s,]+/).filter(function(i){ return byId[i]; }); if(ids.length&&byId[ids[0]]) brain.lastDest=byId[ids[0]].dest;
-    finish(clean||"On it.",ids);
+  var tx=el.querySelector(".tx"), opened=false;
+  function open(){ if(opened) return; opened=true; el.classList.remove("typing","wait"); var dt=el.querySelector(".dots"); if(dt) dt.remove(); if(!tx){ tx=document.createElement("span"); tx.className="tx"; el.appendChild(tx); } }
+  function show(full){ var v=full.replace(/\[\[[\s\S]*?(\]\]|$)/g,"").replace(/\s+$/,""); if(!v) return; open(); tx.innerHTML=mdLite(v); log.scrollTop=log.scrollHeight; }
+  function fallback(note){
+    var d=demoAnswer(text); open(); tx.innerHTML=(note?'<span class="note">'+esc(note)+"</span>":"")+esc(d.text);
+    history_.push({role:"assistant",content:d.text}); addShow(el,d.ids); busy=false; demoAfter(d); log.scrollTop=log.scrollHeight;
+  }
+  function done(full){
+    var act={}, clean=full.replace(/\[\[\s*(plan|show|go|error)\s*:\s*([^\]]*)\]\]/gi,function(m,k,v){ act[k.toLowerCase()]=v.trim(); return ""; }).trim();
+    if(!clean) return fallback(act.error?"Opem AI stopped: "+act.error+". Built-in answer for now:":"Opem AI sent an empty answer. Built-in answer for now:");
+    show(clean); history_.push({role:"assistant",content:clean});
+    var ids=(act.show||"").split(/[\s,]+/).filter(function(i){ return byId[i]; }); if(ids.length) brain.lastDest=byId[ids[0]].dest;
+    addShow(el,ids); busy=false;
     if(act.plan){ setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(act.plan,true); },1600); return; }
     var g=act.go&&destById[act.go.toLowerCase()], chips=[];
     if(g) chips.push({label:"Show me "+g.name,fn:function(){ openSheet(null); goDest(g); }});
     if(brain.lastDest) chips.push({label:"Plan "+brain.lastDest.name+" for me",fn:function(){ send("Plan a trip to "+brain.lastDest.name); }});
     setChips(chips);
-  })
-  .catch(function(){ fallback(""); });
+  }
+  var body={messages:history_.slice(-12).map(function(m){ return {role:m.role,content:m.content}; }),context:ctx,images:(imgs||[]).map(function(i){ return {media_type:"image/jpeg",data:i.data}; })};
+  fetch("api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).then(function(r){
+    if(!r.ok) return r.json().catch(function(){ return {}; }).then(function(j){
+      var why=r.status===429?"Opem AI is getting a lot of messages right now.":r.status===503?"Opem AI isn't connected on the server (no API key).":r.status===413?"Those photos were too big to send.":"Opem AI couldn't answer"+(j&&j.detail?" ("+j.detail+")":"")+".";
+      if(r.status===503){ remoteAI=false; setStatus(); }
+      fallback(why+" Built-in answer for now:");
+    });
+    var ct=r.headers.get("content-type")||"";
+    if(ct.indexOf("json")>=0||!r.body||!r.body.getReader) return r.text().then(function(t){ var j=null; try{ j=JSON.parse(t); }catch(e){} done(j&&typeof j.text==="string"?j.text:t); });
+    var rd=r.body.getReader(), dec=new TextDecoder(), full="";
+    return (function pump(){ return rd.read().then(function(x){ if(x.done){ full+=dec.decode(); return done(full); } full+=dec.decode(x.value,{stream:true}); show(full); return pump(); }); })();
+  }).catch(function(){ fallback("No connection to Opem AI. Built-in answer for now:"); });
 }
 /* the city panel can be dragged or tapped down to a thin bar, so the whole map shows; the Opem bar stays */
 (function(){
@@ -2391,9 +2451,50 @@ function route(text){
   if(chat.mode==="wizard") wizardText(text); else if(chat.mode==="gen") genText(text); else send(text);
 }
 bubble("Hi, I'm Opem, your travel companion.","ai"); menu();
-document.getElementById("composer").addEventListener("submit",function(e){
-  e.preventDefault(); var i=document.getElementById("chatInput"); var v=i.value; i.value=""; route(v);
-});
+(function(){
+  var form=document.getElementById("composer"), ta=document.getElementById("chatInput"), plus=document.getElementById("cPlus"), file=document.getElementById("cFile"),
+      thumbs=document.getElementById("cThumbs"), mic=document.getElementById("cMic"), sendB=document.getElementById("cSend"), hint=document.getElementById("cHint"), pending=[];
+  var SR=window.SpeechRecognition||window.webkitSpeechRecognition, rec=null, base="";
+  function grow(){ ta.style.height="auto"; ta.style.height=Math.min(150,Math.max(28,ta.scrollHeight))+"px"; }
+  function sync(){ var has=!!ta.value.trim()||pending.length>0; sendB.hidden=!has&&!!SR&&!rec; mic.hidden=!SR||(has&&!rec); }
+  function renderThumbs(){
+    thumbs.innerHTML=""; thumbs.hidden=!pending.length;
+    pending.forEach(function(im,k){ var d=document.createElement("div"); d.className="cthumb"; d.innerHTML='<img alt="Photo to send"><button type="button" aria-label="Remove photo">&times;</button>'; d.firstChild.src=im.url;
+      d.lastChild.onclick=function(){ pending.splice(k,1); renderThumbs(); sync(); }; thumbs.appendChild(d); });
+  }
+  function shrink(f,cb){   // photos are made smaller in the phone before they are sent
+    var u=URL.createObjectURL(f), im=new Image();
+    im.onload=function(){ var m=1280, k=Math.min(1,m/Math.max(im.naturalWidth,im.naturalHeight)), c=document.createElement("canvas"); c.width=Math.round(im.naturalWidth*k); c.height=Math.round(im.naturalHeight*k);
+      c.getContext("2d").drawImage(im,0,0,c.width,c.height); URL.revokeObjectURL(u); var url=c.toDataURL("image/jpeg",.82); cb({url:url,data:url.split(",")[1]}); };
+    im.onerror=function(){ URL.revokeObjectURL(u); cb(null); }; im.src=u;
+  }
+  plus.addEventListener("click",function(){ file.click(); });
+  file.addEventListener("change",function(){
+    var fs=[].slice.call(file.files||[]).filter(function(f){ return /^image\//.test(f.type)||/\.(jpe?g|png|heic|webp)$/i.test(f.name); }).slice(0,4-pending.length); file.value="";
+    fs.forEach(function(f){ shrink(f,function(x){ if(x&&pending.length<4){ pending.push(x); renderThumbs(); sync(); } }); });
+    if(!remoteAI) hint.textContent="Photos work on the live Opem site";
+    ta.focus({preventScroll:true});
+  });
+  ta.addEventListener("input",function(){ grow(); sync(); });
+  ta.addEventListener("keydown",function(e){ if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){ e.preventDefault(); form.requestSubmit?form.requestSubmit():form.dispatchEvent(new Event("submit",{cancelable:true})); } });
+  function stopMic(){ if(rec){ try{ rec.stop(); }catch(e){} } }
+  if(SR) mic.addEventListener("click",function(){
+    if(rec) return stopMic();
+    try{ rec=new SR(); }catch(e){ rec=null; return; }
+    base=ta.value?ta.value.replace(/\s*$/," "):""; rec.lang=document.documentElement.lang&&document.documentElement.lang!=="en"?document.documentElement.lang:(navigator.language||"en-US"); rec.interimResults=true; rec.continuous=false;
+    rec.onresult=function(e){ var t=""; for(var i=0;i<e.results.length;i++) t+=e.results[i][0].transcript; ta.value=base+t; grow(); };
+    rec.onerror=function(e){ hint.textContent=e.error==="not-allowed"||e.error==="service-not-allowed"?"Allow the microphone to talk to Opem":"Didn't catch that, try again"; setTimeout(function(){ hint.textContent=""; },3500); };
+    rec.onend=function(){ rec=null; mic.classList.remove("on"); mic.setAttribute("aria-label","Talk to Opem"); hint.textContent=""; sync(); };
+    try{ rec.start(); mic.classList.add("on"); mic.setAttribute("aria-label","Stop listening"); hint.textContent="Listening…"; sync(); }catch(e){ rec=null; }
+  });
+  form.addEventListener("submit",function(e){
+    e.preventDefault(); stopMic();
+    var v=ta.value, imgs=pending.slice(); if(!v.trim()&&!imgs.length) return; if(busy) return;
+    ta.value=""; pending=[]; renderThumbs(); grow(); sync(); hint.textContent="";
+    if(imgs.length) send(v,imgs); else route(v);
+  });
+  sync();
+})();
 document.getElementById("newPlan").addEventListener("click",menu);
 setStatus();
 (function(){
