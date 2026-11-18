@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-18b">
+<meta name="opem-build" content="2026-11-18c">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -255,6 +255,60 @@ body[data-visit] .dock{display:none}
 .istay{font-size:13.5px;margin:10px 0 0}
 .ichg{color:var(--accent);font-size:12.5px;margin:6px 0 0;font-weight:600}
 .iact{margin-top:10px}
+.bookstay{width:100%;margin-top:10px}
+.testbadge{margin-left:auto;font-size:11px;font-weight:800;letter-spacing:.06em;padding:4px 8px;border-radius:999px;background:rgba(255,178,62,.18);color:var(--accent);border:1px solid rgba(255,178,62,.45)}
+.testbadge[hidden]{display:none}
+#book .x{margin-left:8px}
+#bkBody{display:flex;flex-direction:column;gap:10px}
+.bktest{margin:0;font-size:12.5px;color:var(--accent);background:rgba(255,178,62,.08);border:1px solid rgba(255,178,62,.3);border-radius:10px;padding:7px 10px}
+.bkmsg{margin:0;font-size:14px;color:var(--muted)}
+.bkmsg.wait::after{content:"";display:inline-block;width:12px;height:12px;margin-left:8px;border:2px solid var(--muted);border-top-color:transparent;border-radius:50%;animation:spin .8s linear infinite;vertical-align:-2px}
+@keyframes spin{to{transform:rotate(360deg)}}
+.bkmsg.err{color:#ff9b8f}
+.bkmsg.warn{color:var(--accent)}
+.bkback{align-self:flex-start;color:var(--muted);font-size:13.5px;padding:2px 0}
+.bkform{display:flex;flex-direction:column;gap:10px}
+.bkform label{display:flex;flex-direction:column;gap:4px;font-size:12.5px;color:var(--muted);flex:1;min-width:0}
+.bkform input,.bkform select{height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font:inherit;font-size:16px;padding:0 11px;min-width:0;color-scheme:dark}
+.bkform .row2{display:flex;gap:10px}
+.bksort{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--muted)}
+.bksort button{padding:5px 11px;border-radius:999px;border:1px solid var(--line);color:var(--ink);font-size:13px}
+.bksort button.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.bklist{display:flex;flex-direction:column;gap:8px}
+.bkcard{display:flex;gap:11px;text-align:left;padding:8px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03);width:100%;color:var(--ink)}
+.bkcard img,.bkcard .noimg{width:92px;height:92px;border-radius:10px;object-fit:cover;flex:none;background:rgba(255,255,255,.06)}
+.bkcard.small img,.bkcard.small .noimg{width:70px;height:70px}
+.bkcard .bi{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}
+.bkcard b{font-size:14.5px;line-height:1.25}
+.bkcard small{color:var(--muted);font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bkcard .st{color:var(--accent)}
+.bkcard .pr{margin-top:auto;font-size:13px}
+.bkcard .pr small{display:inline;font-size:11.5px}
+.bkchat{display:flex;flex-direction:column;gap:7px;margin-top:9px;white-space:normal}
+.bkhotel .bkpics{display:flex;gap:6px;overflow-x:auto;scroll-snap-type:x mandatory}
+.bkhotel .bkpics img{width:78%;max-width:300px;height:160px;object-fit:cover;border-radius:12px;flex:none;scroll-snap-align:start}
+.bkhotel p{margin:7px 0 0;font-size:13px;color:var(--muted)}
+.bkrate{display:flex;gap:10px;justify-content:space-between;padding:10px;border:1px solid var(--line);border-radius:14px}
+.bkrate>div:first-child{display:flex;flex-direction:column;gap:3px;min-width:0}
+.bkrate b{font-size:14px}
+.bkrate small{font-size:12px;color:var(--muted)}
+.bkrate .cx.ok{color:#7fd9a8}
+.bkrate .rp{display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex:none;text-align:right}
+.bkrate .rp .btn{margin-top:4px;padding:7px 14px}
+.bkrev{width:100%;border-collapse:collapse;font-size:13.5px}
+.bkrev th{text-align:left;color:var(--muted);font-weight:500;padding:6px 8px 6px 0;vertical-align:top;width:34%}
+.bkrev td{padding:6px 0;border-top:1px solid var(--line)}
+.bkrev th{border-top:1px solid var(--line)}
+.bkrev.price td{text-align:right;font-variant-numeric:tabular-nums}
+.bkrev .tot th,.bkrev .tot td{font-weight:700;color:var(--ink)}
+.bkok{display:flex;gap:9px;align-items:flex-start;font-size:13.5px}
+.bkok input{margin-top:3px;width:18px;height:18px;flex:none;accent-color:var(--accent)}
+#bkGo:disabled{opacity:.45}
+.bkdone{border:1px solid rgba(127,217,168,.45);background:rgba(127,217,168,.07);border-radius:14px;padding:12px}
+.bkdone b{font-size:17px;color:#7fd9a8}
+.bkdone p{margin:6px 0 0;font-size:13.5px}
+.bkacts{display:flex;gap:8px;flex-wrap:wrap}
+.bkconf{font-size:13.5px;display:flex;flex-direction:column;gap:6px}
 .aiacts .btn,.consent .btn,.iact .btn{display:inline-flex;align-items:center;margin-top:0}
 .prow .rm{font-size:19px;color:var(--muted);padding:0 6px}
 .prow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px}
@@ -501,6 +555,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
       <figure class="gpic" id="glancePic" hidden></figure>
       <div class="facts" id="facts"></div>
       <p class="note" id="glanceNote"></p>
+      <button class="btn primary bookstay" type="button" id="bookStayBtn" hidden>Book a hotel here</button>
     </section>
 
     <section class="panel glass only-dest" id="card" hidden aria-live="polite"></section>
@@ -531,6 +586,15 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
         </div>
       </div>
     </form>
+  </section>
+
+  <section class="sheet glass" id="book" role="dialog" aria-label="Book a hotel">
+    <header>
+      <div><h2 id="bkTitle">Book a hotel</h2><small id="bkSub"></small></div>
+      <span class="testbadge" id="bkMode" hidden>TEST</span>
+      <button class="x" type="button" data-close aria-label="Close booking">&times;</button>
+    </header>
+    <div class="body" id="bkBody"></div>
   </section>
 
   <section class="sheet glass" id="trips" role="dialog" aria-label="Your trips">
@@ -1579,7 +1643,7 @@ function highlight(ids){
 function showPlace(id){ var p=byId[id]; state.cat="all"; goDest(p.dest); select(id); }
 
 /* ---------- sheets ---------- */
-var sheets={chat:document.getElementById("chat"),trips:document.getElementById("trips")}, dock=document.getElementById("dock");
+var sheets={chat:document.getElementById("chat"),trips:document.getElementById("trips"),book:document.getElementById("book")}, dock=document.getElementById("dock");
 function openSheet(name){
   if(name){ closeSpin(); closeJourney(); }
   Object.keys(sheets).forEach(function(k){ sheets[k].classList.toggle("open",k===name); });
@@ -1614,6 +1678,16 @@ function syncTrips(){
       rm.onclick=function(){ journeys.splice(ji,1); saveJourneys(); syncTrips(); };
       row.appendChild(pl); row.appendChild(rm); tripsBody.appendChild(row);
     });
+  }
+  // hotel bookings (from the booking partner; test ones are marked)
+  if(typeof bookings!=="undefined"&&bookings.length){
+    var hbk=document.createElement("div"); hbk.className="sec"; hbk.innerHTML="<h2>Hotel bookings</h2>"; tripsBody.appendChild(hbk);
+    bookings.forEach(function(rec){ var row=document.createElement("div"); row.className="jrow";
+      var pl=document.createElement("button"); pl.type="button"; pl.className="jplay";
+      pl.innerHTML='<span class="arrow">'+esc(rec.state==="CONFIRMED"?"Booked":rec.state==="CANCELLED"?"Cancelled":rec.state==="FAILED"?"Not booked":"Checking")+(rec.mode==="test"?" · test":"")+"</span><b>"+esc(rec.hotel)+"</b><small>"+esc([rec.check_in+" → "+rec.check_out,rec.reference?"ref "+rec.reference:""].filter(Boolean).join(" · "))+"</small>";
+      pl.onclick=function(){ hbDetail(rec); }; row.appendChild(pl);
+      if(rec.state!=="CONFIRMED"){ var rm=document.createElement("button"); rm.type="button"; rm.className="rm"; rm.innerHTML="&times;"; rm.setAttribute("aria-label","Remove from the list"); rm.onclick=function(){ bookings.splice(bookings.indexOf(rec),1); saveBookings(); syncTrips(); }; row.appendChild(rm); }
+      tripsBody.appendChild(row); });
   }
   // travel profile and plans from Opem (saved only when the traveller says yes)
   var hpf=document.createElement("div"); hpf.className="sec"; hpf.innerHTML="<h2>Your travel profile</h2>"; tripsBody.appendChild(hpf);
@@ -2220,6 +2294,7 @@ function aiContext(focus){
     (typeof visited!=="undefined"&&visited.length?"Countries they have visited: "+visited.slice(0,80).join(", ")+"\n":"")+
     (state.dest?"They are looking at the "+state.dest.name+" map right now.\n":"They are looking at the globe.\n")+
     (chat.itin?"Current itinerary in the chat (edit it with update_itinerary_day): "+JSON.stringify(chat.itin).slice(0,3500)+"\n":"")+
+    (typeof bookings!=="undefined"&&bookings.length?"Hotel bookings on this phone (from the booking partner"+(bookings.some(function(b){ return b.mode==="test"; })?"; test ones are not real":"")+"): "+bookings.slice(0,6).map(function(b){ return b.hotel+", "+b.check_in+" to "+b.check_out+", status "+b.state+(b.reference?", ref "+b.reference:"")+(b.mode==="test"?" (test)":""); }).join("; ")+"\n":"")+
     (itins.length?"Plans saved in Trips: "+itins.slice(0,8).map(function(x){ return x.itin.title; }).join("; ")+"\n":"")+
     (chat.plan?"Plan in the step-by-step builder: "+planText(chat.plan).slice(0,500)+"\n":"")+
     "Cities on Opem's map (id: name, country): "+DESTS.map(function(d){ return d.id+": "+d.name+", "+d.country; }).join("; ")+"\n"+
@@ -2258,6 +2333,7 @@ function runAct(a,el){
     it2.days.forEach(function(x,j){ if(x.day===dd.day) k=j; }); if(k>=0) it2.days[k]=dd; else { it2.days.push(dd); it2.days.sort(function(a,b){ return a.day-b.day; }); }
     chat.itin=it2; itinCard(el,it2,dd.day); }
   else if(n==="propose_saving_preference"){ consentBox(el,String(i.field||"other"),String(i.value||"").slice(0,120)); }
+  else if(n==="search_hotels"){ hotelCards(el,i); }
   else if(n==="start_trip_builder"){ var rq=String(i.request||""); if(rq) setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(rq,true); },1400); }
   if(globe&&W<900) addAiBtn(el,"See it on the globe",function(){ openSheet(null); },true);
 }
@@ -2357,6 +2433,158 @@ function remoteSend(text,imgs,el){
   }).catch(function(){ if(full) done(); else fallback("No connection to Opem AI. Built-in answer for now:"); });
 }
 document.getElementById("aiView").querySelector("button").onclick=clearAiView;
+/* ---- real hotel booking (Duffel Stays). The AI can search; only the checkout button books. ---- */
+var HB={mode:null,s:null,results:[],hotel:null,rates:null,rate:null,quote:null,key:null,guest:{given_name:"",family_name:"",email:"",phone:"+47",requests:""}};
+var bookings=[]; try{ bookings=JSON.parse(localStorage.getItem("opem.bookings")||"[]")||[]; }catch(e){ bookings=[]; }
+function saveBookings(){ try{ localStorage.setItem("opem.bookings",JSON.stringify(bookings)); }catch(e){} }
+if(!sampleFn&&/^https?:$/.test(location.protocol)&&!/claude/.test(location.hostname)){ try{ fetch("api/hotels").then(function(r){ return r.json(); }).then(function(j){ HB.mode=j&&j.ok?j.mode:null; syncBookBtn(); }).catch(function(){}); }catch(e){} }
+var bkBody=document.getElementById("bkBody"), BOARD={room_only:"Room only",breakfast:"Breakfast included",half_board:"Half board",full_board:"Full board",all_inclusive:"All inclusive"};
+function syncBookBtn(){ var b=document.getElementById("bookStayBtn"); if(b) b.hidden=!HB.mode; document.getElementById("bkMode").hidden=HB.mode!=="test"; }
+function fm(m){ return m&&isFinite(m.amount)?(Math.round(m.amount*100)/100).toLocaleString("en-GB",{minimumFractionDigits:m.amount%1?2:0,maximumFractionDigits:2})+" "+m.currency:"–"; }
+function nightsOf(a,b){ return Math.max(1,Math.round((Date.parse(b)-Date.parse(a))/864e5)); }
+function hbDay(d,n){ var x=typeof d==="string"?new Date(d+"T12:00:00"):new Date(d.getTime()); x.setDate(x.getDate()+n); return iso(x); }
+function hbApi(body){ return fetch("api/hotels",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).then(function(r){ return r.json().catch(function(){ return {}; }).then(function(j){ if(!r.ok){ var e=new Error(j.detail||j.error||("Error "+r.status)); e.status=r.status; throw e; } return j; }); }); }
+function hbHead(t,sub){ document.getElementById("bkTitle").textContent=t; document.getElementById("bkSub").textContent=sub||""; bkBody.scrollTop=0; }
+function hbMsg(t,cls){ return '<p class="bkmsg'+(cls?" "+cls:"")+'">'+esc(t)+"</p>"; }
+function hbBack(fn,label){ var b=document.createElement("button"); b.type="button"; b.className="bkback"; b.textContent="← "+(label||"Back"); b.onclick=fn; bkBody.insertBefore(b,bkBody.firstChild); }
+function hbTestNote(){ return HB.mode==="test"?'<p class="bktest">Test mode: results come from the booking partner\'s test system. No money is charged and no real hotel is booked.</p>':""; }
+function hbOpen(p){
+  openSheet("book"); p=p||{};
+  var d=p.lat!=null?null:(state.dest||brain.lastDest||null);
+  HB.s={place:p.place||(d?d.name:""),lat:p.lat!=null?p.lat:(d?d.c[1]:null),lon:p.lon!=null?p.lon:(d?d.c[0]:null),check_in:p.check_in||hbDay(new Date(),30),check_out:p.check_out||hbDay(new Date(),33),adults:p.adults||2,rooms:p.rooms||1};
+  if(p.hotels&&p.hotels.length){ HB.results=p.hotels; if(p.pick){ var h=p.hotels.filter(function(x){ return x.search_result_id===p.pick; })[0]; if(h) return hbRates(h); } return hbList(); }
+  hbForm();
+}
+function hbForm(){
+  var s=HB.s; hbHead("Book a hotel",s.place?s.place:"Choose where and when");
+  if(!HB.mode){ bkBody.innerHTML=hbMsg("Hotel booking isn't connected yet."); return; }
+  bkBody.innerHTML=hbTestNote()+'<form class="bkform" id="bkForm"><label>Where<select id="bkWhere"></select></label><div class="row2"><label>Check-in<input type="date" id="bkIn"></label><label>Check-out<input type="date" id="bkOut"></label></div><div class="row2"><label>Adults<select id="bkAd"></select></label><label>Rooms<select id="bkRo"></select></label></div><button class="btn primary" type="submit">Search hotels</button></form>';
+  var w=document.getElementById("bkWhere");
+  DESTS.slice().sort(function(a,b){ return a.name.localeCompare(b.name); }).forEach(function(d){ var o=document.createElement("option"); o.value=d.id; o.textContent=d.name+", "+d.country; w.appendChild(o); });
+  var cur=DESTS.filter(function(d){ return d.name===s.place; })[0]; if(cur) w.value=cur.id; else if(s.lat!=null){ var o=document.createElement("option"); o.value="_here"; o.textContent=s.place||"Selected area"; w.insertBefore(o,w.firstChild); w.value="_here"; }
+  var ad=document.getElementById("bkAd"), ro=document.getElementById("bkRo"); for(var i=1;i<=8;i++){ ad.add(new Option(i,i)); if(i<=4) ro.add(new Option(i,i)); }
+  ad.value=s.adults; ro.value=s.rooms; var ci=document.getElementById("bkIn"), co=document.getElementById("bkOut"); ci.value=s.check_in; co.value=s.check_out; ci.min=iso(new Date());
+  ci.onchange=function(){ if(co.value<=ci.value) co.value=hbDay(ci.value,3); };
+  document.getElementById("bkForm").onsubmit=function(e){ e.preventDefault();
+    if(w.value!=="_here"){ var d=destById[w.value]; s.place=d.name; s.lat=d.c[1]; s.lon=d.c[0]; }
+    s.check_in=ci.value; s.check_out=co.value; s.adults=+ad.value; s.rooms=+ro.value;
+    if(!s.check_in||!s.check_out||s.check_out<=s.check_in){ bkBody.insertAdjacentHTML("beforeend",hbMsg("Check-out must be after check-in.","err")); return; }
+    hbSearch(); };
+}
+function hbSearch(){
+  var s=HB.s; hbHead("Hotels in "+s.place,s.check_in+" → "+s.check_out+" · "+s.adults+" adult"+(s.adults>1?"s":""));
+  bkBody.innerHTML=hbMsg("Searching live availability…","wait");
+  hbApi({action:"search",lat:s.lat,lon:s.lon,check_in:s.check_in,check_out:s.check_out,adults:s.adults,rooms:s.rooms,radius:4}).then(function(j){ HB.results=j.results||[]; hbList(); })
+    .catch(function(e){ bkBody.innerHTML=hbMsg("Couldn't search right now: "+e.message,"err"); hbBack(hbForm,"Change search"); });
+}
+function hbList(){
+  var s=HB.s, n=nightsOf(s.check_in,s.check_out); hbHead("Hotels in "+s.place,s.check_in+" → "+s.check_out+" · "+n+" night"+(n>1?"s":"")+" · "+s.adults+" adult"+(s.adults>1?"s":""));
+  bkBody.innerHTML=hbTestNote()+(HB.results.length?"":hbMsg("No available hotels found here for these dates."));
+  var sortB=document.createElement("div"); sortB.className="bksort"; sortB.innerHTML='<span>Sort:</span><button type="button" data-s="best" class="on">Best</button><button type="button" data-s="price">Price</button><button type="button" data-s="rating">Rating</button>';
+  if(HB.results.length>1) bkBody.appendChild(sortB);
+  var list=document.createElement("div"); list.className="bklist"; bkBody.appendChild(list);
+  function draw(by){ var r=HB.results.slice(); if(by==="price") r.sort(function(a,b){ return a.cheapest.amount-b.cheapest.amount; }); if(by==="rating") r.sort(function(a,b){ return (b.review||0)-(a.review||0); });
+    list.innerHTML=""; r.forEach(function(h){ list.appendChild(hbCard(h,function(){ hbRates(h); })); }); }
+  sortB.onclick=function(e){ var b=e.target.closest("button"); if(!b) return; [].forEach.call(sortB.querySelectorAll("button"),function(x){ x.classList.toggle("on",x===b); }); draw(b.dataset.s); };
+  draw("best"); hbBack(hbForm,"Change search");
+}
+function hbCard(h,fn,small){
+  var c=document.createElement("button"); c.type="button"; c.className="bkcard"+(small?" small":"");
+  c.innerHTML=(h.photo?'<img alt="" loading="lazy">':'<span class="noimg"></span>')+'<span class="bi"><b></b><small class="st"></small><small class="ad"></small><span class="pr"></span></span>';
+  if(h.photo) c.querySelector("img").src=h.photo;
+  c.querySelector("b").textContent=h.name;
+  c.querySelector(".st").textContent=[h.stars?"★".repeat(Math.round(h.stars)):"",h.review?h.review.toFixed(1)+"/10"+(h.reviews?" ("+h.reviews+")":""):""].filter(Boolean).join("  ");
+  c.querySelector(".ad").textContent=h.address||"";
+  c.querySelector(".pr").innerHTML="<b>"+esc(fm(h.cheapest))+"</b> total"+(h.at_hotel&&h.at_hotel.amount>0?" <small>+ "+esc(fm(h.at_hotel))+" at hotel</small>":"");
+  c.onclick=fn; return c;
+}
+function hbRates(h){
+  HB.hotel=h; openSheet("book"); hbHead(h.name,HB.s.check_in+" → "+HB.s.check_out);
+  bkBody.innerHTML=hbMsg("Getting rooms and prices…","wait");
+  hbApi({action:"rates",search_result_id:h.search_result_id}).then(function(j){
+    HB.rates=j.rates||[]; var x=j.hotel||{}, top=document.createElement("div"); top.className="bkhotel";
+    var ph=(x.photos&&x.photos.length?x.photos:h.photo?[h.photo]:[]).slice(0,5);
+    top.innerHTML=(ph.length?'<div class="bkpics">'+ph.map(function(){ return '<img alt="" loading="lazy">'; }).join("")+"</div>":"")+"<p class=\"ad\"></p>"+(x.amenities&&x.amenities.length?'<p class="am"></p>':"");
+    [].forEach.call(top.querySelectorAll(".bkpics img"),function(im,i){ im.src=ph[i]; });
+    top.querySelector(".ad").textContent=[x.stars||h.stars?"★".repeat(Math.round(x.stars||h.stars)):"",x.address||h.address].filter(Boolean).join(" · ");
+    if(x.amenities&&x.amenities.length) top.querySelector(".am").textContent=x.amenities.join(" · ");
+    bkBody.innerHTML=hbTestNote(); bkBody.appendChild(top);
+    if(!HB.rates.length){ bkBody.insertAdjacentHTML("beforeend",hbMsg("No rooms left for these dates.")); }
+    HB.rates.forEach(function(r){ var c=document.createElement("div"); c.className="bkrate";
+      c.innerHTML='<div><b></b><small class="bd"></small><small class="cx"></small></div><div class="rp"><b></b><small></small><button type="button" class="btn primary">Choose</button></div>';
+      c.querySelector("b").textContent=r.room; c.querySelector(".bd").textContent=[BOARD[r.board]||r.board,r.beds].filter(Boolean).join(" · ");
+      var cx=c.querySelector(".cx"); cx.textContent=r.cancel.text; cx.classList.add(r.cancel.refundable===true?"ok":"no");
+      c.querySelector(".rp b").textContent=fm(r.total); c.querySelector(".rp small").textContent=r.at_hotel&&r.at_hotel.amount>0?"+ "+fm(r.at_hotel)+" at hotel":"incl. taxes";
+      c.querySelector("button").onclick=function(){ HB.rate=r; hbGuest(); }; bkBody.appendChild(c); });
+    hbBack(function(){ HB.results.length?hbList():hbForm(); },"All hotels");
+  }).catch(function(e){ bkBody.innerHTML=hbMsg("Couldn't get rooms: "+e.message,"err"); hbBack(function(){ HB.results.length?hbList():hbForm(); },"All hotels"); });
+}
+function hbGuest(){
+  var g=HB.guest; hbHead("Who's staying?",HB.hotel.name);
+  bkBody.innerHTML=hbTestNote()+'<form class="bkform" id="bkG"><div class="row2"><label>First name<input id="gGiven" autocomplete="given-name" required></label><label>Last name<input id="gFamily" autocomplete="family-name" required></label></div><label>Email (for the confirmation)<input id="gEmail" type="email" autocomplete="email" required></label><label>Phone with country code<input id="gPhone" type="tel" autocomplete="tel" required></label><label>Requests to the hotel (optional)<input id="gReq" maxlength="300"></label><p class="note">Opem only sends this to the hotel for the booking. It is not shared with Opem\'s AI.</p><button class="btn primary" type="submit">Review booking</button></form>';
+  var f={gGiven:"given_name",gFamily:"family_name",gEmail:"email",gPhone:"phone",gReq:"requests"}; Object.keys(f).forEach(function(id){ document.getElementById(id).value=g[f[id]]||""; });
+  document.getElementById("bkG").onsubmit=function(e){ e.preventDefault(); Object.keys(f).forEach(function(id){ g[f[id]]=document.getElementById(id).value.trim(); });
+    if(!/^\+\d{6,15}$/.test(g.phone.replace(/[\s-]/g,""))){ bkBody.insertAdjacentHTML("beforeend",hbMsg("Write the phone number with country code, like +47 912 34 567.","err")); return; }
+    hbReview(); };
+  hbBack(function(){ hbRates(HB.hotel); },"Rooms");
+}
+function hbReview(){
+  hbHead("Check and confirm",HB.hotel.name); bkBody.innerHTML=hbMsg("Checking the latest price with the hotel…","wait"); HB.quote=null;
+  hbApi({action:"quote",rate_id:HB.rate.id}).then(function(j){
+    var q=HB.quote=j.quote; HB.key=HB.key&&HB.key.indexOf(q.id)===0?HB.key:q.id+"-"+Math.random().toString(36).slice(2,10);
+    var changed=HB.rate.total&&q.total&&Math.abs(q.total.amount-HB.rate.total.amount)>0.009, n=nightsOf(q.check_in,q.check_out), r=q.rate||HB.rate, g=HB.guest;
+    var rows=[["Room",r.room+(r.board?" · "+(BOARD[r.board]||r.board):"")],["Dates",q.check_in+" → "+q.check_out+" ("+n+" night"+(n>1?"s":"")+")"],["Guest",g.given_name+" "+g.family_name+" · "+g.email],["Cancellation",r.cancel?r.cancel.text:"See hotel terms"]];
+    var price=[["Room price",q.base],["Taxes",q.tax],["Fees",q.fee]].filter(function(x){ return x[1]&&x[1].amount>0; });
+    bkBody.innerHTML=hbTestNote()+(changed?hbMsg("The price changed from "+fm(HB.rate.total)+" to "+fm(q.total)+". Check before you confirm.","warn"):"")+
+      '<table class="bkrev">'+rows.map(function(x){ return "<tr><th>"+esc(x[0])+"</th><td>"+esc(x[1])+"</td></tr>"; }).join("")+"</table>"+
+      '<table class="bkrev price">'+price.map(function(x){ return "<tr><th>"+esc(x[0])+"</th><td>"+esc(fm(x[1]))+"</td></tr>"; }).join("")+'<tr class="tot"><th>Total now</th><td>'+esc(fm(q.total))+"</td></tr>"+(q.at_hotel&&q.at_hotel.amount>0?"<tr><th>Pay at the hotel</th><td>"+esc(fm(q.at_hotel))+"</td></tr>":"")+"</table>"+
+      '<label class="bkok"><input type="checkbox" id="bkAgree"> I have checked the details and accept the hotel\'s cancellation policy'+(HB.mode==="test"?" (test booking, nothing is charged)":"")+'.</label>'+
+      '<button class="btn primary" type="button" id="bkGo" disabled>'+(HB.mode==="test"?"Confirm test booking":"Confirm booking")+"</button>";
+    var ag=document.getElementById("bkAgree"), go=document.getElementById("bkGo"); ag.onchange=function(){ go.disabled=!ag.checked; }; go.onclick=hbBook;
+    hbBack(hbGuest,"Guest details");
+  }).catch(function(e){ bkBody.innerHTML=hbMsg((e.status===409?"This room is no longer available at that price. ":"Couldn't check the price: ")+e.message,"err"); hbBack(function(){ hbRates(HB.hotel); },"Choose another room"); });
+}
+function hbStore(rec){ var k=-1; bookings.forEach(function(b,i){ if(b.key===rec.key) k=i; }); if(k>=0) bookings[k]=Object.assign(bookings[k],rec); else bookings.unshift(rec); saveBookings(); if(typeof syncTrips==="function") syncTrips(); }
+function hbBook(){
+  var q=HB.quote, g=HB.guest, key=HB.key; if(!q) return;
+  hbStore({key:key,state:"BOOKING_PENDING",mode:HB.mode,hotel:q.hotel.name||HB.hotel.name,address:q.hotel.address||HB.hotel.address,check_in:q.check_in,check_out:q.check_out,room:(q.rate||HB.rate).room,total:q.total,created:iso(new Date())});
+  hbHead("Booking…",HB.hotel.name); bkBody.innerHTML=hbMsg("Sending your booking to the hotel. Don't close Opem.","wait");
+  hbApi({action:"book",quote_id:q.id,key:key,confirmed:true,guest:{given_name:g.given_name,family_name:g.family_name},email:g.email,phone:g.phone.replace(/[\s-]/g,""),requests:g.requests})
+    .then(function(j){ hbDone(j.booking,key); })
+    .catch(function(e){
+      if(!e.status||e.status>=500){ hbStore({key:key,state:"CHECKING"}); bkBody.innerHTML=hbMsg("We lost the answer from the hotel. Checking whether the booking went through…","wait"); return hbCheck(key); }
+      hbStore({key:key,state:"FAILED",error:e.message}); bkBody.innerHTML=hbMsg("The booking didn't go through: "+e.message+". Nothing was booked.","err"); hbBack(function(){ hbRates(HB.hotel); },"Choose another room");
+    });
+}
+function hbCheck(key){
+  hbApi({action:"find",key:key}).then(function(j){ if(j.booking) return hbDone(j.booking,key);
+      hbStore({key:key,state:"FAILED",error:"Not found at the hotel"}); bkBody.innerHTML=hbMsg("The booking was not made. You can try again.","err"); hbBack(hbReview,"Try again"); })
+    .catch(function(){ bkBody.innerHTML=hbMsg("Still can't reach the booking system. Your booking is marked \"checking\" in Trips; open it there in a minute.","warn"); });
+}
+function hbDone(b,key){
+  hbStore({key:key,state:b.status==="confirmed"?"CONFIRMED":String(b.status||"").toUpperCase(),id:b.id,reference:b.reference,hotel:b.hotel.name,address:b.hotel.address,check_in:b.check_in,check_out:b.check_out,room:b.room,total:b.total||HB.quote&&HB.quote.total,cancel:b.cancel&&b.cancel.text,hotel_phone:b.hotel_phone,hotel_email:b.hotel_email,key_collection:b.key_collection});
+  hbHead(b.status==="confirmed"?"Booked!":"Booking "+b.status,b.hotel.name);
+  bkBody.innerHTML=hbTestNote()+'<div class="bkdone"><b>'+(b.status==="confirmed"?"Confirmed":"Status: "+esc(b.status))+"</b><p>Booking reference <strong>"+esc(b.reference||b.id)+"</strong></p><p>"+esc(b.check_in+" → "+b.check_out+" · "+(b.room||""))+"</p>"+(b.cancel?"<p>"+esc(b.cancel.text)+"</p>":"")+(b.key_collection?"<p>Key collection: "+esc(b.key_collection)+"</p>":"")+(b.hotel_phone?"<p>Hotel phone: "+esc(b.hotel_phone)+"</p>":"")+'<p class="note">Saved in Trips under Hotel bookings.</p></div>';
+}
+function hbDetail(rec){
+  openSheet("book"); hbHead(rec.hotel,rec.check_in+" → "+rec.check_out);
+  function show(){ bkBody.innerHTML=(rec.mode==="test"?'<p class="bktest">Test booking. No money was charged.</p>':"")+'<table class="bkrev">'+[["Status",rec.state],["Reference",rec.reference||"–"],["Room",rec.room||"–"],["Total",fm(rec.total)],["Cancellation",rec.cancel||"–"],["Hotel",[rec.address,rec.hotel_phone,rec.hotel_email].filter(Boolean).join(" · ")||"–"]].map(function(x){ return "<tr><th>"+esc(x[0])+"</th><td>"+esc(x[1])+"</td></tr>"; }).join("")+"</table>"+
+    '<div class="bkacts"><button type="button" class="btn" id="bkRef">Refresh status</button>'+(rec.id&&rec.state==="CONFIRMED"?'<button type="button" class="btn" id="bkCan">Cancel booking</button>':"")+"</div>";
+    document.getElementById("bkRef").onclick=function(){ (rec.id?hbApi({action:"get",id:rec.id}):hbApi({action:"find",key:rec.key})).then(function(j){ if(j.booking){ var b=j.booking; Object.assign(rec,{id:b.id,reference:b.reference,state:String(b.status).toUpperCase()}); saveBookings(); syncTrips(); } else if(rec.state==="CHECKING"){ rec.state="FAILED"; saveBookings(); syncTrips(); } show(); }).catch(function(e){ bkBody.insertAdjacentHTML("beforeend",hbMsg("Couldn't refresh: "+e.message,"err")); }); };
+    var cb=document.getElementById("bkCan"); if(cb) cb.onclick=function(){ cb.outerHTML='<span class="bkconf">Cancel this booking? '+esc(rec.cancel||"")+' <button type="button" class="btn" id="bkCanYes">Yes, cancel</button></span>';
+      document.getElementById("bkCanYes").onclick=function(){ hbApi({action:"cancel",id:rec.id,confirmed:true}).then(function(j){ rec.state=String(j.booking.status).toUpperCase(); saveBookings(); syncTrips(); show(); }).catch(function(e){ bkBody.insertAdjacentHTML("beforeend",hbMsg("Couldn't cancel: "+e.message,"err")); }); }; };
+  }
+  show();
+}
+function hotelCards(el,i){
+  var w=document.createElement("div"); w.className="bkchat";
+  if(i.mode==="test") w.innerHTML='<p class="bktest">Test mode: nothing is charged.</p>';
+  (i.hotels||[]).slice(0,6).forEach(function(h){ w.appendChild(hbCard(h,function(){ hbOpen({place:i.place,lat:i.lat,lon:i.lon,check_in:i.check_in,check_out:i.check_out,adults:i.adults,rooms:i.rooms,hotels:i.hotels,pick:h.search_result_id}); },true)); });
+  if(!(i.hotels||[]).length) w.insertAdjacentHTML("beforeend",hbMsg("No available hotels found there for those dates."));
+  el.appendChild(w); log.scrollTop=log.scrollHeight;
+}
+document.getElementById("bookStayBtn").onclick=function(){ hbOpen({}); };
+syncBookBtn();
 /* the city panel can be dragged or tapped down to a thin bar, so the whole map shows; the Opem bar stays */
 (function(){
   var gl=document.getElementById("glance"), grab=document.getElementById("glanceGrab"), h2=document.getElementById("p-title"), y0=null, dy=0, moved=false;
