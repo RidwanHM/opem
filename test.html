@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><title>Opem AI tests</title>
+<meta name="robots" content="noindex">
+<style>
+body{margin:0;background:#0b1020;color:#eef3f8;font:15px/1.45 system-ui,-apple-system,sans-serif;padding:18px 14px 40px}
+h1{font-size:20px;margin:0 0 4px} p{color:#9fb0c6;margin:0 0 14px;font-size:13.5px}
+button{font:inherit;font-weight:700;border:0;border-radius:999px;padding:11px 16px;background:#ffb23e;color:#1a1206;margin:0 8px 8px 0}
+button.ghost{background:rgba(255,255,255,.08);color:#eef3f8}
+button:disabled{opacity:.5}
+#status{margin:8px 0 14px;color:#ffb23e;font-weight:600;font-size:14px}
+table{width:100%;border-collapse:collapse;font-size:13.5px;margin-bottom:18px}
+th,td{text-align:left;padding:7px 6px;border-bottom:1px solid rgba(255,255,255,.1);vertical-align:top}
+th{color:#9fb0c6;font-weight:600;font-size:12px}
+td.n{text-align:right;font-variant-numeric:tabular-nums}
+details{border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:8px 10px;margin-bottom:6px}
+summary{cursor:pointer;font-weight:600}
+.small{color:#9fb0c6;font-size:12.5px;white-space:pre-wrap}
+.bad{color:#ff8a80}
+</style></head><body>
+<h1>Opem AI tests</h1>
+<p>Runs Opem's test conversations against the real AI and lets a judge score them (1–5). The simple test compares the fast model (Haiku) with the strong one (Sonnet). Costs about 1–2 dollars in total. Take a screenshot of the summary when it is done.</p>
+<button id="b1">Simple: Haiku vs Sonnet</button><button id="b2" class="ghost">All 50 with Sonnet</button>
+<div id="status"></div>
+<div id="sum"></div>
+<div id="rows"></div>
+<script>
+var st=document.getElementById("status"), sumEl=document.getElementById("sum"), rowsEl=document.getElementById("rows"), all=[];
+function esc(s){return String(s==null?"":s).replace(/[&<>"]/g,function(c){return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c];});}
+function score(g){ if(!g||g.relevance==null) return null; return (g.relevance+g.accuracy+g.helpfulness+g.tools+g.tone_length)/5; }
+function summary(){
+  var by={}; all.forEach(function(r){ var k=r.label; (by[k]=by[k]||[]).push(r); });
+  var h='<table><tr><th>Run</th><th>Cases</th><th>Avg score</th><th>Invented facts</th><th>Errors</th><th>Avg time</th><th>Avg cost</th></tr>';
+  Object.keys(by).forEach(function(k){ var rs=by[k], ok=rs.filter(function(r){ return !r.error; }), sc=ok.map(function(r){ return score(r.grade); }).filter(function(x){ return x!=null; });
+    var avg=function(a){ return a.length?a.reduce(function(x,y){return x+y;},0)/a.length:0; };
+    h+="<tr><td>"+esc(k)+'</td><td class="n">'+rs.length+'</td><td class="n">'+avg(sc).toFixed(2)+'</td><td class="n">'+ok.filter(function(r){ return r.grade&&r.grade.invented_live_facts; }).length+'</td><td class="n">'+(rs.length-ok.length)+'</td><td class="n">'+(avg(ok.map(function(r){return r.ms;}))/1000).toFixed(1)+' s</td><td class="n">$'+avg(ok.map(function(r){return r.cost_usd;})).toFixed(4)+"</td></tr>"; });
+  sumEl.innerHTML=h+"</table>";
+}
+function addRow(r){
+  var g=r.grade||{}, s=score(g), d=document.createElement("details");
+  d.innerHTML="<summary>"+esc(r.id)+" · "+esc(r.label)+" · "+(r.error?'<span class="bad">error</span>':(s!=null?s.toFixed(1):"?")+(g.invented_live_facts?' <span class="bad">invented facts</span>':"")+(g.wrong_language?' <span class="bad">wrong language</span>':""))+"</summary>"+
+    '<div class="small">'+esc(r.error||("Judge: "+(g.note||"")+"\nTools: "+(r.tools||[]).join(", ")+"  Actions: "+(r.acts||[]).join(", ")+"  Time: "+(r.ms/1000).toFixed(1)+" s  Cost: $"+r.cost_usd+"\n\n"+r.answer))+"</div>";
+  rowsEl.appendChild(d);
+}
+async function run(only,model,label,total){
+  for(var from=0;from<total;from+=4){
+    st.textContent="Running "+label+": "+Math.min(total,from+4)+" of "+total+"…";
+    try{ var r=await fetch("api/eval?only="+only+"&model="+model+"&from="+from+"&n=4"); var j=await r.json();
+      if(!r.ok){ st.textContent="Stopped: "+(j.error||r.status); return false; }
+      j.results.forEach(function(x){ x.label=label; all.push(x); addRow(x); }); summary();
+    }catch(e){ st.textContent="Stopped: "+e.message; return false; }
+  }
+  return true;
+}
+document.getElementById("b1").onclick=async function(){ this.disabled=true; if(await run("simple","haiku","Simple · Haiku",20)&&await run("simple","sonnet","Simple · Sonnet",20)) st.textContent="Done. Take a screenshot of the table."; this.disabled=false; };
+document.getElementById("b2").onclick=async function(){ this.disabled=true; if(await run("simple","sonnet","Simple · Sonnet",20)&&await run("complex","sonnet","Complex · Sonnet",30)) st.textContent="Done. Take a screenshot of the table."; this.disabled=false; };
+</script></body></html>
