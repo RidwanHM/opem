@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-18c">
+<meta name="opem-build" content="2026-11-19a">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -66,7 +66,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .chip[aria-pressed="true"]{color:var(--ink);border-color:rgba(255,255,255,.5);background:rgba(30,44,74,.95)}
 
 /* bottom panel */
-.dock{position:absolute;left:12px;right:12px;bottom:12px;display:flex;flex-direction:column;gap:10px;align-items:stretch;max-width:480px;margin:0 auto;pointer-events:none}
+.dock{position:absolute;left:12px;right:12px;bottom:calc(var(--tb) + 10px);display:flex;flex-direction:column;gap:10px;align-items:stretch;max-width:480px;margin:0 auto;pointer-events:none}
 .dock > *{pointer-events:auto}
 .panel{border-radius:var(--r);padding:16px}
 #glance{transition:transform .18s ease}
@@ -155,7 +155,7 @@ body[data-rmap="1"] .pin.model svg{display:block}
 .pin.model:focus-visible span{border-color:var(--accent)}
 
 /* sheets */
-.sheet{position:absolute;left:0;right:0;bottom:0;max-width:520px;margin:0 auto;height:min(76%,620px);border-radius:22px 22px 0 0;display:flex;flex-direction:column;transform:translateY(105%);transition:transform .28s ease;visibility:hidden;z-index:5}
+.sheet{position:absolute;left:0;right:0;bottom:var(--tb);max-width:520px;margin:0 auto;height:min(76%,620px);border-radius:22px;display:flex;flex-direction:column;transform:translateY(105%);transition:transform .28s ease;visibility:hidden;z-index:5}
 .sheet.open{transform:none;visibility:visible}
 .sheet header{display:flex;align-items:center;gap:10px;padding:14px 16px 10px;border-bottom:1px solid var(--line)}
 .sheet header small{color:var(--muted);display:block;font-size:12.5px}
@@ -221,7 +221,7 @@ body[data-rmap="1"] .pin.model svg{display:block}
 .gf{display:inline-block;margin-top:5px;color:var(--accent);font-weight:600;text-decoration:underline}
 .btn:disabled{opacity:.7;cursor:default}
 .stack{display:flex;flex-direction:column;gap:10px}
-.visit{position:absolute;left:12px;right:12px;bottom:12px;max-width:480px;margin:0 auto;border-radius:22px;padding:16px;max-height:58%;overflow-y:auto;display:none;flex-direction:column;gap:12px;z-index:4}
+.visit{position:absolute;left:12px;right:12px;bottom:calc(var(--tb) + 10px);max-width:480px;margin:0 auto;border-radius:22px;padding:16px;max-height:58%;overflow-y:auto;display:none;flex-direction:column;gap:12px;z-index:4}
 body[data-visit] .visit{display:flex;animation:rise .6s .35s ease both}
 body[data-visit] .dock{display:none}
 .eqrow{display:flex;justify-content:flex-end}
@@ -319,6 +319,18 @@ body[data-visit] .dock{display:none}
 .eqbtn svg{width:20px;height:20px;display:block}
 .eqbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 body[data-visit] .eqrow{display:none}
+:root{--tb:calc(74px + env(safe-area-inset-bottom,0px))}
+body.kb{--tb:0px}
+body.kb .tabbar{transform:translateY(140%);opacity:0;pointer-events:none}
+#visitBtn,#tripsBtn{display:none !important}
+.tabbar{position:absolute;left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom,0px));max-width:420px;margin:0 auto;height:60px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:6px;z-index:6;
+  background:rgba(22,24,30,.82);border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 30px rgba(0,0,0,.35);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);transition:transform .3s ease,opacity .3s ease}
+.tab{position:relative;flex:1;height:48px;border-radius:999px;display:grid;place-items:center;color:rgba(255,255,255,.92);transition:background .25s ease,color .25s ease,transform .15s ease}
+.tab svg{width:26px;height:26px;display:block}
+.tab:active{transform:scale(.94)}
+.tab.on{background:rgba(255,255,255,.15)}
+.tab[data-tab="visited"].on{color:var(--accent)}
+.tbadge{position:absolute;top:6px;left:calc(50% + 7px);min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:10.5px;font-weight:800;line-height:17px;text-align:center}
 #visitBtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .backworld{margin-left:auto;border:1px solid var(--accent);color:var(--accent);height:34px;padding:0 12px;font-size:13px}
 .backworld:not([hidden]) + .x{margin-left:8px}
@@ -343,7 +355,7 @@ body[data-visit] .eqrow{display:none}
 #journey{position:absolute;inset:0;z-index:6;display:none;pointer-events:none}
 #journey.open{display:block}
 #jx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.jpanel{position:absolute;left:12px;right:12px;bottom:12px;max-width:480px;margin:0 auto;pointer-events:auto;border-radius:22px;padding:16px}
+.jpanel{position:absolute;left:12px;right:12px;bottom:calc(var(--tb) + 10px);max-width:480px;margin:0 auto;pointer-events:auto;border-radius:22px;padding:16px}
 .jpanel h1{font-size:17px;margin:4px 0 0}
 .jpanel .meta{margin:8px 0 10px;min-height:2.9em}
 .jdots{display:flex;gap:6px;margin-bottom:12px}
@@ -455,7 +467,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 #spin.open{display:block}
 #spin.has-result .spin-panel .card-head .sub{display:none}
 #fx{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-.spin-panel{position:absolute;left:12px;right:12px;bottom:12px;max-width:480px;margin:0 auto;pointer-events:auto;border-radius:22px;padding:16px;max-height:72%;overflow-y:auto}
+.spin-panel{position:absolute;left:12px;right:12px;bottom:calc(var(--tb) + 10px);max-width:480px;margin:0 auto;pointer-events:auto;border-radius:22px;padding:16px;max-height:72%;overflow-y:auto}
 .reels{display:grid;grid-template-columns:1.25fr .85fr 1.25fr;gap:8px;margin:12px 0}
 .reel{border:1px solid var(--line);border-radius:14px;padding:9px 10px;min-height:66px;overflow:hidden;background:rgba(255,255,255,.04)}
 .reel small{display:block;color:var(--muted);font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase}
@@ -506,12 +518,12 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 [data-mode="globe"] .only-dest,[data-mode="dest"] .only-globe{display:none !important}
 [hidden]{display:none !important}
 @media (min-width:900px){
-  .jpanel{margin:0;left:24px;bottom:24px;right:auto;width:440px}
-  .visit{margin:0;left:24px;bottom:24px;right:auto;width:440px;max-height:80%}
-  .spin-panel{margin:0;left:24px;bottom:24px;right:auto;width:440px}
-  .dock{margin:0;left:24px;bottom:24px;width:420px}
+  .jpanel{margin:0;left:24px;bottom:calc(var(--tb) + 12px);right:auto;width:440px}
+  .visit{margin:0;left:24px;bottom:calc(var(--tb) + 12px);right:auto;width:440px;max-height:72%}
+  .spin-panel{margin:0;left:24px;bottom:calc(var(--tb) + 12px);right:auto;width:440px}
+  .dock{margin:0;left:24px;bottom:calc(var(--tb) + 12px);width:420px}
   .top{padding:20px 24px 0}
-  .sheet{margin:0 24px 0 auto;right:0;left:auto;width:440px}
+  .sheet{margin:0 24px 0 auto;right:0;left:auto;width:440px;bottom:calc(var(--tb) + 4px)}
 }
 @media (prefers-reduced-motion:reduce){
   .dest-pin i::after{animation:none}
@@ -587,6 +599,13 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
       </div>
     </form>
   </section>
+
+  <nav class="tabbar" id="tabbar" aria-label="Main">
+    <button type="button" class="tab on" data-tab="home" aria-label="Globe" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.6 12 4l8 6.6V19a1.6 1.6 0 0 1-1.6 1.6H15v-5.2H9v5.2H5.6A1.6 1.6 0 0 1 4 19z" fill="currentColor"/></svg></button>
+    <button type="button" class="tab" data-tab="visited" aria-label="Visited countries"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4.5M6 4.5h10.5l-2 3.8 2 3.7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="tab" data-tab="opem" aria-label="Chat with Opem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5c0 4-3.6 7.2-8 7.2-1 0-2-.2-2.9-.5L4.5 19.6l1.3-3.6A6.9 6.9 0 0 1 4 11.5c0-4 3.6-7.2 8-7.2s8 3.2 8 7.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="tab" data-tab="trips" aria-label="Your trips"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="7" width="17" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3.5 12.5h17" fill="none" stroke="currentColor" stroke-width="2"/></svg><span class="tbadge" id="tabTrips" hidden></span></button>
+  </nav>
 
   <section class="sheet glass" id="book" role="dialog" aria-label="Book a hotel">
     <header>
@@ -1653,6 +1672,29 @@ function openSheet(name){
 Array.prototype.forEach.call(document.querySelectorAll("[data-close]"),function(b){ b.addEventListener("click",function(){ openSheet(null); }); });
 document.addEventListener("keydown",function(e){ if(e.key==="Escape") openSheet(null); });
 document.getElementById("askBtn").addEventListener("click",function(){ openSheet("chat"); });
+/* bottom tab bar: Globe, Visited, Opem, Trips */
+(function(){
+  var bar=document.getElementById("tabbar"), tabs={}; [].forEach.call(bar.querySelectorAll(".tab"),function(b){ tabs[b.dataset.tab]=b; });
+  function openName(){ var n=null; Object.keys(sheets).forEach(function(k){ if(sheets[k].classList.contains("open")) n=k; }); return n; }
+  function sync(){
+    var sh=openName(), cur=sh==="chat"||sh==="book"?"opem":sh==="trips"?"trips":visitMode?"visited":"home";
+    Object.keys(tabs).forEach(function(k){ tabs[k].classList.toggle("on",k===cur); if(k===cur) tabs[k].setAttribute("aria-current","page"); else tabs[k].removeAttribute("aria-current"); });
+    var c=document.getElementById("tripCount"), t=document.getElementById("tabTrips"); t.hidden=c.hidden; t.textContent=c.textContent;
+  }
+  window.syncTabs=sync;
+  tabs.home.onclick=function(){ closeSpin(); closeJourney(); openSheet(null); if(visitMode) setVisit(false,true); else if(state.dest) goGlobe(); else document.getElementById("brandBtn").click(); sync(); };
+  tabs.visited.onclick=function(){ openSheet(null); closeSpin(); closeJourney();
+    if(state.dest){ goGlobe(); setTimeout(function(){ visitBtn.click(); sync(); },900); } else visitBtn.click(); sync(); };
+  tabs.opem.onclick=function(){ var o=openName(); openSheet(o==="chat"?null:"chat"); sync(); };
+  tabs.trips.onclick=function(){ var o=openName(); if(o==="trips") openSheet(null); else document.getElementById("tripsBtn").click(); sync(); };
+  new MutationObserver(sync).observe(document.body,{attributes:true,attributeFilter:["data-visit","data-mode"]});
+  Object.keys(sheets).forEach(function(k){ new MutationObserver(sync).observe(sheets[k],{attributes:true,attributeFilter:["class"]}); });
+  new MutationObserver(sync).observe(document.getElementById("tripCount"),{attributes:true,childList:true,characterData:true,subtree:true});
+  // hide the bar while typing, so the keyboard has room
+  document.addEventListener("focusin",function(e){ if(e.target.matches&&e.target.matches("input[type=text],input[type=email],input[type=tel],input[type=search],input:not([type]),textarea")) document.body.classList.add("kb"); });
+  document.addEventListener("focusout",function(){ setTimeout(function(){ var a=document.activeElement; if(!(a&&a.matches&&a.matches("input[type=text],input[type=email],input[type=tel],input[type=search],input:not([type]),textarea"))) document.body.classList.remove("kb"); },120); });
+  sync();
+})();
 document.getElementById("tripsBtn").addEventListener("click",function(){ closeJDetail(); syncTrips(); openSheet("trips"); });
 document.getElementById("backBtn").addEventListener("click",goGlobe);
 document.getElementById("brandBtn").addEventListener("click",function(){
