@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-19b">
+<meta name="opem-build" content="2026-11-19c">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -77,6 +77,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #glance.min{padding-bottom:12px}
 #glance.min > :not(.grab):not(h2){display:none !important}
 #glance.min h2{margin-bottom:0}
+#visit .grab{margin:-12px 0 -6px;flex:none}
+#visit{transition:transform .25s ease}
+#visit.min{padding-bottom:12px;overflow:hidden}
+#visit.min > :not(.grab):not(.card-head){display:none !important}
 h1{font-family:var(--display);font-weight:700;font-size:19px;line-height:1.25;margin:0 0 4px;text-wrap:balance}
 h2{font-family:var(--display);font-weight:500;font-size:14px;letter-spacing:.03em;margin:0}
 .sub{color:var(--muted);margin:0 0 12px;font-size:14px}
@@ -648,6 +652,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   </section>
 
   <section class="visit glass" id="visit" role="dialog" aria-label="My world: countries visited">
+    <button class="grab" type="button" id="visitGrab" aria-expanded="true" aria-label="Hide or show My world"><span></span></button>
     <div class="card-head"><div><h1 id="visitTitle">My world</h1></div>
       <button class="pill backworld" type="button" id="visitBack" hidden>&#8592; My world</button>
       <button class="x" type="button" id="visitClose" aria-label="Close my world">&times;</button></div>
@@ -2627,6 +2632,20 @@ function hotelCards(el,i){
 }
 document.getElementById("bookStayBtn").onclick=function(){ hbOpen({}); };
 syncBookBtn();
+/* My world can be dragged or tapped down the same way, so the whole globe shows */
+(function(){
+  var v=document.getElementById("visit"), grab=document.getElementById("visitGrab"), head=v.querySelector(".card-head"), y0=null, dy=0, moved=false;
+  function setMin(on){ v.classList.toggle("min",on); grab.setAttribute("aria-expanded",String(!on)); v.style.transform=""; }
+  function down(e){ if(e.target.closest("button")&&e.target.closest("button")!==grab) return; y0=e.clientY; dy=0; moved=false; try{ e.currentTarget.setPointerCapture(e.pointerId); }catch(x){} }
+  function move(e){ if(y0===null) return; dy=e.clientY-y0; if(Math.abs(dy)>6) moved=true; var min=v.classList.contains("min"); v.style.transition="none"; v.style.transform="translateY("+clamp(dy,min?-40:0,min?0:160)*.6+"px)"; }
+  function up(){ if(y0===null) return; var min=v.classList.contains("min"); y0=null; v.style.transition="";
+    if(!moved) setMin(!min); else if(!min&&dy>34) setMin(true); else if(min&&dy<-24) setMin(false); else v.style.transform=""; }
+  [grab,head].forEach(function(el){ el.addEventListener("pointerdown",down); el.addEventListener("pointermove",move); el.addEventListener("pointerup",up); el.addEventListener("pointercancel",function(){ y0=null; v.style.transition=""; v.style.transform=""; }); });
+  grab.addEventListener("keydown",function(e){ if(e.key==="Enter"||e.key===" "){ e.preventDefault(); setMin(!v.classList.contains("min")); } });
+  // opening a country card or leaving Visited brings the panel back up
+  new MutationObserver(function(){ if(!document.getElementById("visitCard").hidden) setMin(false); }).observe(document.getElementById("visitCard"),{attributes:true,attributeFilter:["hidden"]});
+  new MutationObserver(function(){ if(!document.body.dataset.visit) setMin(false); }).observe(document.body,{attributes:true,attributeFilter:["data-visit"]});
+})();
 /* the city panel can be dragged or tapped down to a thin bar, so the whole map shows; the Opem bar stays */
 (function(){
   var gl=document.getElementById("glance"), grab=document.getElementById("glanceGrab"), h2=document.getElementById("p-title"), y0=null, dy=0, moved=false;
