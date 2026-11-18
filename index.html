@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-19a">
+<meta name="opem-build" content="2026-11-19b">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -324,13 +324,13 @@ body.kb{--tb:0px}
 body.kb .tabbar{transform:translateY(140%);opacity:0;pointer-events:none}
 #visitBtn,#tripsBtn{display:none !important}
 .tabbar{position:absolute;left:12px;right:12px;bottom:calc(8px + env(safe-area-inset-bottom,0px));max-width:420px;margin:0 auto;height:60px;border-radius:999px;display:flex;align-items:center;justify-content:space-between;padding:6px;z-index:6;
-  background:rgba(22,24,30,.82);border:1px solid rgba(255,255,255,.1);box-shadow:0 10px 30px rgba(0,0,0,.35);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);transition:transform .3s ease,opacity .3s ease}
-.tab{position:relative;flex:1;height:48px;border-radius:999px;display:grid;place-items:center;color:rgba(255,255,255,.92);transition:background .25s ease,color .25s ease,transform .15s ease}
+  background:var(--panel);border:1px solid var(--line);box-shadow:0 10px 30px rgba(0,0,0,.4);backdrop-filter:blur(18px) saturate(140%);-webkit-backdrop-filter:blur(18px) saturate(140%);transition:transform .3s ease,opacity .3s ease}
+.tab{position:relative;flex:1;height:48px;border-radius:999px;display:grid;place-items:center;color:var(--muted);transition:background .25s ease,color .25s ease,transform .15s ease}
 .tab svg{width:26px;height:26px;display:block}
 .tab:active{transform:scale(.94)}
-.tab.on{background:rgba(255,255,255,.15)}
-.tab[data-tab="visited"].on{color:var(--accent)}
-.tbadge{position:absolute;top:6px;left:calc(50% + 7px);min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--accent);color:var(--accent-ink);font-size:10.5px;font-weight:800;line-height:17px;text-align:center}
+.tab:hover{color:var(--ink)}
+.tab.on{background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px rgba(255,178,62,.3)}
+.tbadge{position:absolute;top:6px;left:calc(50% + 7px);min-width:17px;height:17px;padding:0 4px;border-radius:999px;background:var(--accent);color:var(--accent-ink);box-shadow:0 0 0 2px #0c1323;font-size:10.5px;font-weight:800;line-height:17px;text-align:center}
 #visitBtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
 .backworld{margin-left:auto;border:1px solid var(--accent);color:var(--accent);height:34px;padding:0 12px;font-size:13px}
 .backworld:not([hidden]) + .x{margin-left:8px}
