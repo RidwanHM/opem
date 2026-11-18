@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-18a">
+<meta name="opem-build" content="2026-11-18b">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -225,6 +225,42 @@ body[data-rmap="1"] .pin.model svg{display:block}
 body[data-visit] .visit{display:flex;animation:rise .6s .35s ease both}
 body[data-visit] .dock{display:none}
 .eqrow{display:flex;justify-content:flex-end}
+.aiview{align-self:center;display:flex;align-items:center;gap:6px;padding:5px 6px 5px 14px;border-radius:999px;background:rgba(12,18,32,.82);border:1px solid rgba(255,178,62,.5);font-size:13px;font-weight:600;max-width:86%;backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px)}
+.aiview[hidden]{display:none}
+.aiview span{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.aiview button{width:24px;height:24px;border-radius:50%;background:rgba(255,255,255,.1);color:var(--ink);font-size:15px;line-height:24px;text-align:center;flex:none}
+.dest-pin.aimark{box-shadow:0 0 0 3px rgba(255,178,62,.45),0 0 18px rgba(255,178,62,.65)}
+.aiacts{display:flex;gap:6px;flex-wrap:wrap;margin-top:9px;white-space:normal}
+.aist{display:block;color:var(--muted);font-size:12.5px;margin-top:6px}
+.aist[hidden]{display:none}
+.consent{margin-top:9px;padding:10px 11px;border:1px solid rgba(255,178,62,.4);border-radius:12px;background:rgba(255,178,62,.06);display:flex;flex-direction:column;gap:6px;font-size:13.5px;white-space:normal}
+.consent div{display:flex;gap:6px;flex-wrap:wrap}
+.itin{margin-top:10px;border:1px solid var(--line);border-radius:14px;padding:12px;background:rgba(0,0,0,.2);white-space:normal}
+.itin .ih b{display:block;font-size:15.5px;line-height:1.3}
+.itin .ih small{color:var(--muted);font-size:12.5px}
+.idays{list-style:none;padding:0;margin:10px 0 0;display:flex;flex-direction:column;gap:9px}
+.idays li{border-left:2px solid rgba(255,178,62,.45);padding:2px 0 2px 10px}
+.idays li.chg{border-left-color:var(--accent);background:rgba(255,178,62,.09);border-radius:0 8px 8px 0}
+.idays b{display:block;font-size:14px}
+.idays small{color:var(--muted);font-size:12px}
+.idays p{margin:3px 0 0;font-size:13.5px;line-height:1.4}
+.idays i,.istay i{font-style:normal;color:var(--accent);font-weight:600;margin-right:3px}
+.idays .tip{color:var(--muted);font-size:12.5px}
+.ibud{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px}
+.ibud caption{text-align:left;color:var(--muted);font-size:12px;padding-bottom:4px}
+.ibud td{padding:4px 0;border-top:1px solid var(--line)}
+.ibud td:last-child{text-align:right;font-variant-numeric:tabular-nums}
+.ibud .tot td{font-weight:700}
+.inote{color:var(--muted);font-size:12px;margin:5px 0 0}
+.istay{font-size:13.5px;margin:10px 0 0}
+.ichg{color:var(--accent);font-size:12.5px;margin:6px 0 0;font-weight:600}
+.iact{margin-top:10px}
+.aiacts .btn,.consent .btn,.iact .btn{display:inline-flex;align-items:center;margin-top:0}
+.prow .rm{font-size:19px;color:var(--muted);padding:0 6px}
+.prow{display:flex;align-items:center;gap:8px;padding:9px 10px;border:1px solid var(--line);border-radius:12px;margin-bottom:6px}
+.prow span{flex:1;min-width:0}
+.prow small{display:block;color:var(--muted);font-size:12px}
+.linkbtn{color:var(--muted);font-size:13px;text-decoration:underline;padding:2px 0 8px;align-self:flex-start}
 .eqbtn{width:38px;height:38px;border-radius:50%;display:grid;place-items:center;color:var(--ink,#eef3fa);transition:background .25s,color .25s}
 .eqbtn svg{width:20px;height:20px;display:block}
 .eqbtn[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);border-color:transparent}
@@ -446,6 +482,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
       <button class="pill glass" id="tripsBtn" type="button">Trips <span class="badge" id="tripCount" hidden>0</span></button>
     </div>
     <div class="chips only-dest" id="chips" role="group" aria-label="Show on map"></div>
+    <div class="aiview only-globe" id="aiView" hidden><span></span><button type="button" aria-label="Clear what Opem showed">&times;</button></div>
     <div class="eqrow only-globe"><button class="eqbtn glass" id="eqBtn" type="button" aria-pressed="false" aria-label="Keep the globe level around the equator" title="Keep the globe level"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="8.5" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M3.5 12h17" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/><path d="M12 3.5c-2.6 2.4-3.8 5.3-3.8 8.5s1.2 6.1 3.8 8.5M12 3.5c2.6 2.4 3.8 5.3 3.8 8.5s-1.2 6.1-3.8 8.5" fill="none" stroke="currentColor" stroke-width="1.3" opacity=".6"/></svg></button></div>
   </div>
 
@@ -1239,6 +1276,24 @@ function render(){
       ctx.beginPath(); ctx.arc(p[0],p[1],7,0,6.3); ctx.strokeStyle="rgba(255,255,255,.55)"; ctx.lineWidth=1; ctx.stroke(); });
     ctx.globalAlpha=1;
   }
+  // things Opem's AI put on the globe: a route, a spot
+  if(farA>0&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&(aiRoute||aiSpot)){
+    ctx.globalAlpha=farA; ctx.textBaseline="middle"; ctx.font="700 12px Figtree, system-ui, sans-serif";
+    if(aiRoute){
+      var rp=aiRoute.stops.map(function(s){ return [s.lon,s.lat]; }), prog=reduce?1:clamp((performance.now()-aiRoute.t0)/1600,0,1), segs=rp.length-1, upto=prog*segs;
+      ctx.beginPath(); for(var ri=0;ri<segs;ri++){ if(ri>=upto) break; var a0=rp[ri], a1=rp[ri+1], f=Math.min(1,upto-ri), mid=d3.geoInterpolate(a0,a1)(f); path({type:"LineString",coordinates:[a0,mid]}); }
+      ctx.setLineDash([7,6]); ctx.strokeStyle="rgba(255,178,62,.95)"; ctx.lineWidth=2.4; ctx.stroke(); ctx.setLineDash([]);
+      aiRoute.stops.forEach(function(s,si){ var ll=[s.lon,s.lat]; if(!front(ll)) return; var p=proj(ll);
+        ctx.beginPath(); ctx.arc(p[0],p[1],5,0,6.3); ctx.fillStyle="#ffb23e"; ctx.fill(); ctx.lineWidth=2; ctx.strokeStyle="#1a1206"; ctx.stroke();
+        ctx.fillStyle="rgba(255,255,255,.95)"; ctx.textAlign="left"; ctx.fillText((si+1)+" "+s.name,p[0]+9,p[1]); });
+    }
+    if(aiSpot&&front(aiSpot.ll)){ var sp=proj(aiSpot.ll), pulse=(performance.now()%1600)/1600;
+      ctx.beginPath(); ctx.arc(sp[0],sp[1],6+pulse*14,0,6.3); ctx.strokeStyle="rgba(255,178,62,"+(0.7*(1-pulse))+")"; ctx.lineWidth=2; ctx.stroke();
+      ctx.beginPath(); ctx.arc(sp[0],sp[1],5,0,6.3); ctx.fillStyle="#ffb23e"; ctx.fill();
+      ctx.fillStyle="#fff"; ctx.textAlign="left"; ctx.fillText(aiSpot.name,sp[0]+10,sp[1]);
+      if(!reduce) setTimeout(draw,60); }
+    ctx.globalAlpha=1;
+  }
   var active=(rel>.55&&nr.dist<.06)?nd:null;
   if(state.dest!==active){ state.dest=active; onMode(); }
   var placed=[], dots=[], nowT=performance.now(), pend=false, vk=view.lon.toFixed(2)+","+view.lat.toFixed(2)+","+view.z.toFixed(3);
@@ -1259,7 +1314,7 @@ function render(){
     if(!d.pw){ ctx.save(); ctx.font="700 13.5px Figtree, system-ui, sans-serif"; d.pw=ctx.measureText(d.name).width+(d.pic?54:46); ctx.restore(); }
     // which cities get a name: fixed priority (list order), so the same ones win while the globe moves
     if(d.cc===undefined){ d.cc=null; if(typeof CONTS!=="undefined") CONTS.forEach(function(c){ if(c[1]===CONT[d.id]) d.cc=c[0]; }); }
-    var named=nameCont?d.cc===nameCont:z>=zHome()+.035;   // names show from continent level: when you tap a continent, or zoom in that far yourself
+    var named=typeof aiMark!=="undefined"&&aiMark?!!aiMark.ids[d.id]:(nameCont?d.cc===nameCont:z>=zHome()+.035);   // names show from continent level: when you tap a continent, or zoom in that far yourself
     var want=!named||hideW, x0=flip?p[0]-d.pw+13:p[0]-13;
     var m=d.isMini===false?-8:8;   // a name that is showing keeps its place a little longer than a new one needs to earn it
     if(!want){ placed.forEach(function(q){ if(x0<q.x1+m&&x0+d.pw>q.x0-m&&Math.abs(p[1]-q.y)<27+m*.5) want=true; }); if(!want) placed.push({x0:x0,x1:x0+d.pw,y:p[1]}); }
@@ -1537,6 +1592,7 @@ document.getElementById("askBtn").addEventListener("click",function(){ openSheet
 document.getElementById("tripsBtn").addEventListener("click",function(){ closeJDetail(); syncTrips(); openSheet("trips"); });
 document.getElementById("backBtn").addEventListener("click",goGlobe);
 document.getElementById("brandBtn").addEventListener("click",function(){
+  if(typeof clearAiView==="function") clearAiView();
   closeSpin(); closeJourney(); openSheet(null); select(null);
   if(visitMode&&!reduce) setVisit(false,true); else { if(visitMode) setVisit(false); flyTo(18,37,0,1600); }
 });
@@ -1559,6 +1615,26 @@ function syncTrips(){
       row.appendChild(pl); row.appendChild(rm); tripsBody.appendChild(row);
     });
   }
+  // travel profile and plans from Opem (saved only when the traveller says yes)
+  var hpf=document.createElement("div"); hpf.className="sec"; hpf.innerHTML="<h2>Your travel profile</h2>"; tripsBody.appendChild(hpf);
+  var pks=typeof profile!=="undefined"?Object.keys(profile).filter(function(k){ return profile[k]; }):[];
+  if(!pks.length){ var npf=document.createElement("p"); npf.className="note"; npf.textContent="Empty. When you tell Opem how you like to travel, he asks before saving it here, so his tips fit you."; tripsBody.appendChild(npf); }
+  pks.forEach(function(k){ var row=document.createElement("div"); row.className="prow"; row.innerHTML="<span><small></small><b></b></span>";
+    row.querySelector("small").textContent=PROFILE_LABEL[k]||k; row.querySelector("b").textContent=profile[k];
+    var rm=document.createElement("button"); rm.type="button"; rm.className="rm"; rm.innerHTML="&times;"; rm.setAttribute("aria-label","Delete "+(PROFILE_LABEL[k]||k)+" from your profile");
+    rm.onclick=function(){ delete profile[k]; saveProfile(); syncTrips(); }; row.appendChild(rm); tripsBody.appendChild(row); });
+  if(pks.length){ var clr=document.createElement("button"); clr.type="button"; clr.className="linkbtn"; clr.textContent="Delete the whole profile"; clr.onclick=function(){ profile={}; saveProfile(); syncTrips(); }; tripsBody.appendChild(clr); }
+  var hit=document.createElement("div"); hit.className="sec"; hit.innerHTML="<h2>Plans from Opem</h2>"; tripsBody.appendChild(hit);
+  if(typeof itins==="undefined"||!itins.length){ var nit=document.createElement("p"); nit.className="note"; nit.textContent="No plans yet. Ask Opem for a day-by-day plan and tap Save to Trips."; tripsBody.appendChild(nit); }
+  else itins.forEach(function(rec,ri){
+    var row=document.createElement("div"); row.className="jrow";
+    var pl=document.createElement("button"); pl.type="button"; pl.className="jplay";
+    pl.innerHTML='<span class="arrow">Open &#8594;</span><b>'+esc(rec.itin.title)+"</b><small>"+esc([rec.itin.destination,rec.itin.days.length+" days","saved "+rec.saved].filter(Boolean).join(" · "))+"</small>";
+    pl.onclick=function(){ openItin(rec); };
+    var rm=document.createElement("button"); rm.type="button"; rm.className="rm"; rm.innerHTML="&times;"; rm.setAttribute("aria-label","Delete the plan "+rec.itin.title);
+    rm.onclick=function(){ itins.splice(ri,1); saveItins(); syncTrips(); };
+    row.appendChild(pl); row.appendChild(rm); tripsBody.appendChild(row);
+  });
   var hp=document.createElement("div"); hp.className="sec"; hp.innerHTML="<h2>Planned trips</h2>"; tripsBody.appendChild(hp);
   if(!state.plans.length){ var np=document.createElement("p"); np.className="note"; np.textContent="No trips yet. Open the chat and plan one with Opem."; tripsBody.appendChild(np); }
   state.plans.forEach(function(pl){
@@ -2129,49 +2205,158 @@ function send(text,imgs){
     finish((err&&err.code==="rate_limited"?"The assistant is busy right now, so here is a built-in answer. ":"")+d.text,d.ids); demoAfter(d);
   });
 }
-/* the real AI on the hosted site: a server function (api/chat) holds the key and the personality, and streams the answer */
+/* the real AI on the hosted site: api/chat runs Claude with tools and streams lines of JSON (words, checks, globe actions) */
 var remoteAI=!sampleFn&&/^https?:$/.test(location.protocol)&&!/claude/.test(location.hostname);
 if(!sampleFn&&/^https?:$/.test(location.protocol)){ try{ fetch("api/chat").then(function(r){ return r.json(); }).then(function(j){ remoteAI=!!(j&&j.ok); setStatus(); }).catch(function(){}); }catch(e){} }
-function remoteSend(text,imgs,el){
-  var focus=findDests(" "+text.toLowerCase()+" ")[0]||brain.lastDest||state.dest||null; if(focus) brain.lastDest=focus;
-  var ctx="Today: "+iso(new Date())+". The traveller usually flies from Oslo.\n"+(state.dest?"They are looking at the "+state.dest.name+" map.\n":"They are looking at the globe.\n")+
-    (chat.plan?"Their current plan: "+planText(chat.plan).slice(0,600)+"\n":"")+
+var PROFILE_LABEL={home_airport:"Home airport",budget:"Budget",travel_style:"Travel style",pace:"Pace",accommodation:"Places to stay",interests:"Interests",companions:"Travels with",languages:"Languages",other:"Other"};
+var profile={}; try{ profile=JSON.parse(localStorage.getItem("opem.profile")||"{}")||{}; }catch(e){ profile={}; }
+function saveProfile(){ try{ localStorage.setItem("opem.profile",JSON.stringify(profile)); }catch(e){} }
+var itins=[]; try{ itins=JSON.parse(localStorage.getItem("opem.itins")||"[]")||[]; }catch(e){ itins=[]; }
+function saveItins(){ try{ localStorage.setItem("opem.itins",JSON.stringify(itins)); }catch(e){} }
+function aiContext(focus){
+  var pf=Object.keys(profile).filter(function(k){ return profile[k]; }).map(function(k){ return (PROFILE_LABEL[k]||k)+": "+profile[k]; });
+  return "The traveller "+(profile.home_airport?"flies from "+profile.home_airport:"usually flies from Oslo (OSL) unless they say otherwise")+".\n"+
+    (pf.length?"Saved travel profile (the traveller agreed to save this): "+pf.join("; ")+"\n":"No saved travel profile yet.\n")+
+    (typeof visited!=="undefined"&&visited.length?"Countries they have visited: "+visited.slice(0,80).join(", ")+"\n":"")+
+    (state.dest?"They are looking at the "+state.dest.name+" map right now.\n":"They are looking at the globe.\n")+
+    (chat.itin?"Current itinerary in the chat (edit it with update_itinerary_day): "+JSON.stringify(chat.itin).slice(0,3500)+"\n":"")+
+    (itins.length?"Plans saved in Trips: "+itins.slice(0,8).map(function(x){ return x.itin.title; }).join("; ")+"\n":"")+
+    (chat.plan?"Plan in the step-by-step builder: "+planText(chat.plan).slice(0,500)+"\n":"")+
     "Cities on Opem's map (id: name, country): "+DESTS.map(function(d){ return d.id+": "+d.name+", "+d.country; }).join("; ")+"\n"+
     (focus?"Places in "+focus.name+" (id | category | name | area | details):\n"+focus.places.filter(function(p){ return !p.hide; }).map(function(p){ return p.id+" | "+CATS[p.cat].label+" | "+p.name+" | "+p.area+" | "+(p.kind||"")+" | sample"; }).join("\n")+
       (focus.realStays?"\n"+focus.realStays.map(function(p){ return p.id+" | Stay | "+p.name+" | "+p.area+" | "+p.kind+" | real place, no price"; }).join("\n"):""):"");
+}
+/* ---- what the AI can do on the globe ---- */
+var aiMark=null, aiRoute=null, aiSpot=null, aiViewEl=null;
+function aiView(label){
+  if(!aiViewEl) aiViewEl=document.getElementById("aiView");
+  if(!label){ aiViewEl.hidden=true; return; }
+  aiViewEl.querySelector("span").textContent=label; aiViewEl.hidden=false;
+}
+function clearAiView(){ aiMark=null; aiRoute=null; aiSpot=null; aiView(null); syncAiPins(); draw(); }
+function syncAiPins(){ DESTS.forEach(function(d){ if(d.pin) d.pin.classList.toggle("aimark",!!(aiMark&&aiMark.ids[d.id])); }); }
+function fitPoints(pts){
+  if(!pts.length) return;
+  var mp={type:"MultiPoint",coordinates:pts}, c=pts.length>1?d3.geoCentroid(mp):pts[0], far=0;
+  pts.forEach(function(p){ far=Math.max(far,d3.geoDistance(p,c)); });
+  var zh=zHome(), z=far<.06?zh+.24:far<.15?zh+.16:far<.32?zh+.09:far<.6?zh+.04:zh;
+  if(state.dest) select(null);
+  flyTo(c[0],clamp(c[1]-(z>zh+.1?2:5),-60,70),z,1500);
+}
+function runAct(a,el){
+  var n=a.name, i=a.input||{}, globe=false;
+  if(n==="show_city"){ var d=destById[i.city_id]; if(!d) return; addAiBtn(el,"Open "+d.name,function(){ openSheet(null); goDest(d); }); if(W>=900) goDest(d); else { clearAiView(); fitPoints([d.c]); } }
+  else if(n==="mark_cities"){ var ids={}, pts=[]; (i.city_ids||[]).forEach(function(id){ var d=destById[id]; if(d){ ids[id]=1; pts.push(d.c); } }); if(!pts.length) return;
+    aiRoute=null; aiSpot=null; aiMark={ids:ids}; syncAiPins(); aiView(i.label||"Opem's picks"); fitPoints(pts); globe=true; }
+  else if(n==="show_on_globe"){ aiMark=null; syncAiPins(); aiRoute=null; aiSpot={ll:[i.lon,i.lat],name:i.name}; aiView(i.name);
+    if(state.dest) select(null); flyTo(i.lon,clamp(i.lat-(i.kind==="country"?4:2),-60,70),i.kind==="country"?zHome()+.06:zHome()+.2,1500); globe=true; }
+  else if(n==="draw_route"){ var st=(i.stops||[]).filter(function(s){ return isFinite(s.lat)&&isFinite(s.lon); }); if(st.length<2) return;
+    aiMark=null; syncAiPins(); aiSpot=null; aiRoute={stops:st,t0:performance.now()}; aiView(i.label||st.map(function(s){ return s.name; }).join(" → ")); fitPoints(st.map(function(s){ return [s.lon,s.lat]; })); globe=true; animRoute(); }
+  else if(n==="show_places"){ var ok=(i.place_ids||[]).filter(function(id){ return byId[id]; }); if(ok.length){ addShow(el,ok); brain.lastDest=byId[ok[0]].dest; } }
+  else if(n==="create_itinerary"){ var it=cleanItin(i); if(!it) return; it.id="it"+Date.now().toString(36); chat.itin=it; itinCard(el,it,false); }
+  else if(n==="update_itinerary_day"){ if(!chat.itin) return; var dd=cleanDay(i); if(!dd) return; var it2=JSON.parse(JSON.stringify(chat.itin)), k=-1;
+    it2.days.forEach(function(x,j){ if(x.day===dd.day) k=j; }); if(k>=0) it2.days[k]=dd; else { it2.days.push(dd); it2.days.sort(function(a,b){ return a.day-b.day; }); }
+    chat.itin=it2; itinCard(el,it2,dd.day); }
+  else if(n==="propose_saving_preference"){ consentBox(el,String(i.field||"other"),String(i.value||"").slice(0,120)); }
+  else if(n==="start_trip_builder"){ var rq=String(i.request||""); if(rq) setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(rq,true); },1400); }
+  if(globe&&W<900) addAiBtn(el,"See it on the globe",function(){ openSheet(null); },true);
+}
+function animRoute(){ if(!aiRoute) return; draw(); if(performance.now()-aiRoute.t0<1700) requestAnimationFrame(animRoute); }
+function addAiBtn(el,label,fn,once){
+  if(once&&el.querySelector('[data-ai="globe"]')) return;
+  var row=el.querySelector(".aiacts"); if(!row){ row=document.createElement("div"); row.className="aiacts"; el.appendChild(row); }
+  var b=document.createElement("button"); b.type="button"; b.className="btn"; b.textContent=label; if(once) b.dataset.ai="globe"; b.onclick=fn; row.appendChild(b); log.scrollTop=log.scrollHeight;
+}
+function consentBox(el,field,value){
+  if(!value||profile[field]===value) return;
+  var w=document.createElement("div"); w.className="consent";
+  w.innerHTML='<span>Save to your travel profile?</span><b></b><div><button type="button" class="btn primary">Save</button><button type="button" class="btn">No thanks</button></div>';
+  w.querySelector("b").textContent=(PROFILE_LABEL[field]||"Note")+": "+value;
+  var bs=w.querySelectorAll("button");
+  bs[0].onclick=function(){ profile[field]=value; saveProfile(); syncTrips(); w.innerHTML='<span>Saved to your travel profile. You can change it in Trips.</span>'; };
+  bs[1].onclick=function(){ w.innerHTML="<span>Not saved.</span>"; };
+  el.appendChild(w); log.scrollTop=log.scrollHeight;
+}
+/* ---- itineraries ---- */
+function s1(x,n){ return String(x==null?"":x).trim().slice(0,n||400); }
+function cleanDay(x){ if(!x) return null; var d=parseInt(x.day,10); if(!(d>=1&&d<=60)) return null; return {day:d,place:s1(x.place,80),title:s1(x.title,120)||"Day "+d,morning:s1(x.morning),afternoon:s1(x.afternoon),evening:s1(x.evening),tip:s1(x.tip,300)}; }
+function cleanItin(x){
+  var days=(x.days||[]).map(cleanDay).filter(Boolean).slice(0,21); if(!days.length) return null;
+  var b=x.budget||{}, bud=null; if(typeof b==="object"){ bud={currency:s1(b.currency,6)||"NOK",note:s1(b.note,300)}; ["flights","stay","food","activities","local_transport"].forEach(function(k){ var v=+b[k]; if(isFinite(v)&&v>0) bud[k]=Math.round(v); }); }
+  return {title:s1(x.title,120)||"Trip plan",destination:s1(x.destination,120),start_date:/^\d{4}-\d{2}-\d{2}$/.test(x.start_date||"")?x.start_date:"",travellers:Math.max(0,Math.min(20,parseInt(x.travellers,10)||0)),days:days,budget:bud,stay_area:s1(x.stay_area,300)};
+}
+var BUDLBL={flights:"Flights",stay:"Stay",food:"Food",activities:"Activities",local_transport:"Local transport"};
+function itinCard(el,it,changed){
+  var c=document.createElement("div"); c.className="itin";
+  var h='<div class="ih"><b>'+esc(it.title)+"</b><small>"+esc([it.destination,it.days.length+(it.days.length===1?" day":" days"),it.travellers?it.travellers+(it.travellers===1?" traveller":" travellers"):"",it.start_date?"from "+it.start_date:""].filter(Boolean).join(" · "))+"</small></div>";
+  if(changed) h+='<p class="ichg">Updated day '+changed+"</p>";
+  h+='<ol class="idays">'+it.days.map(function(d){ return '<li'+(d.day===changed?' class="chg"':"")+'><b>Day '+d.day+" · "+esc(d.title)+"</b>"+(d.place?"<small>"+esc(d.place)+"</small>":"")+
+    (d.morning?"<p><i>Morning</i> "+esc(d.morning)+"</p>":"")+(d.afternoon?"<p><i>Afternoon</i> "+esc(d.afternoon)+"</p>":"")+(d.evening?"<p><i>Evening</i> "+esc(d.evening)+"</p>":"")+(d.tip?'<p class="tip">'+esc(d.tip)+"</p>":"")+"</li>"; }).join("")+"</ol>";
+  if(it.stay_area) h+='<p class="istay"><i>Where to stay</i> '+esc(it.stay_area)+"</p>";
+  if(it.budget){ var tot=0, rows=Object.keys(BUDLBL).filter(function(k){ return it.budget[k]; }).map(function(k){ tot+=it.budget[k]; return "<tr><td>"+BUDLBL[k]+"</td><td>"+kr(it.budget[k])+"</td></tr>"; });
+    if(rows.length) h+='<table class="ibud"><caption>Estimated budget ('+esc(it.budget.currency)+")</caption>"+rows.join("")+'<tr class="tot"><td>Total</td><td>'+kr(tot)+"</td></tr></table>"+(it.budget.note?'<p class="inote">'+esc(it.budget.note)+"</p>":""); }
+  h+='<div class="iact"><button type="button" class="btn primary"></button></div>';
+  c.innerHTML=h;
+  var sb=c.querySelector(".iact button"), had=itins.some(function(x){ return x.id===it.id; });
+  sb.textContent=had?"Save changes to Trips":"Save to Trips";
+  sb.onclick=function(){ var k=-1; itins.forEach(function(x,j){ if(x.id===it.id) k=j; }); var rec={id:it.id,saved:iso(new Date()),itin:JSON.parse(JSON.stringify(it))};
+    if(k>=0) itins[k]=rec; else itins.unshift(rec); saveItins(); syncTrips(); sb.textContent="Saved in Trips"; sb.disabled=true; };
+  el.appendChild(c); log.scrollTop=log.scrollHeight;
+}
+function openItin(rec){
+  openSheet("chat"); chat.itin=JSON.parse(JSON.stringify(rec.itin)); chat.itin.id=rec.id;
+  var el=bubble("Here's your saved plan. Tell me what to change, like \"make day 2 more relaxed\".","ai"); setTimeout(function(){ itinCard(el,chat.itin,false); },900);
+}
+/* ---- one answer from the AI ---- */
+function remoteSend(text,imgs,el){
+  var focus=findDests(" "+text.toLowerCase()+" ")[0]||brain.lastDest||state.dest||null; if(focus) brain.lastDest=focus;
   busy=true;
-  var tx=el.querySelector(".tx"), opened=false;
-  function open(){ if(opened) return; opened=true; el.classList.remove("typing","wait"); var dt=el.querySelector(".dots"); if(dt) dt.remove(); if(!tx){ tx=document.createElement("span"); tx.className="tx"; el.appendChild(tx); } }
-  function show(full){ var v=full.replace(/\[\[[\s\S]*?(\]\]|$)/g,"").replace(/\s+$/,""); if(!v) return; open(); tx.innerHTML=mdLite(v); log.scrollTop=log.scrollHeight; }
+  var tx=el.querySelector(".tx"), opened=false, full="", st=null, acts=[], gotErr=null;
+  function open(){ if(opened) return; opened=true; el.classList.remove("typing","wait"); var dt=el.querySelector(".dots"); if(dt) dt.remove(); if(!tx){ tx=document.createElement("span"); tx.className="tx"; el.insertBefore(tx,el.firstChild); } }
+  function status(s){ if(!st){ st=document.createElement("span"); st.className="aist"; el.appendChild(st); } st.textContent=s+"…"; st.hidden=false; if(!opened){ open(); } log.scrollTop=log.scrollHeight; }
+  function show(){ var v=full.replace(/\[\[[\s\S]*?(\]\]|$)/g,"").replace(/\s+$/,""); if(!v) return; open(); tx.innerHTML=mdLite(v); if(st) st.hidden=true; log.scrollTop=log.scrollHeight; }
   function fallback(note){
-    var d=demoAnswer(text); open(); tx.innerHTML=(note?'<span class="note">'+esc(note)+"</span>":"")+esc(d.text);
+    var d=demoAnswer(text); open(); if(st) st.remove(); tx.innerHTML=(note?'<span class="note">'+esc(note)+"</span>":"")+esc(d.text);
     history_.push({role:"assistant",content:d.text}); addShow(el,d.ids); busy=false; demoAfter(d); log.scrollTop=log.scrollHeight;
   }
-  function done(full){
-    var act={}, clean=full.replace(/\[\[\s*(plan|show|go|error)\s*:\s*([^\]]*)\]\]/gi,function(m,k,v){ act[k.toLowerCase()]=v.trim(); return ""; }).trim();
-    if(!clean) return fallback(act.error?"Opem AI stopped: "+act.error+". Built-in answer for now:":"Opem AI sent an empty answer. Built-in answer for now:");
-    show(clean); history_.push({role:"assistant",content:clean});
-    var ids=(act.show||"").split(/[\s,]+/).filter(function(i){ return byId[i]; }); if(ids.length) brain.lastDest=byId[ids[0]].dest;
-    addShow(el,ids); busy=false;
+  function done(){
+    if(st) st.remove();
+    var act={}, clean=full.replace(/\[\[\s*(plan|show|go)\s*:\s*([^\]]*)\]\]/gi,function(m,k,v){ act[k.toLowerCase()]=v.trim(); return ""; }).trim();
+    if(!clean&&!acts.length) return fallback(gotErr?errNote(gotErr):"Opem AI sent an empty answer. Built-in answer for now:");
+    if(clean) show(); else { open(); tx.textContent=""; }
+    if(gotErr&&clean){ var nt=document.createElement("span"); nt.className="note"; nt.textContent="(The answer was cut off: "+(gotErr.detail||gotErr.v)+")"; el.appendChild(nt); }
+    var summary=clean+(acts.length?"\n(Opem did: "+acts.map(function(a){ return a.name; }).join(", ")+")":"");
+    history_.push({role:"assistant",content:summary||"(Opem showed something in the app.)"});
+    // older tag format, still understood
+    var ids=(act.show||"").split(/[\s,]+/).filter(function(i){ return byId[i]; }); if(ids.length){ brain.lastDest=byId[ids[0]].dest; addShow(el,ids); }
+    busy=false;
     if(act.plan){ setTimeout(function(){ chat.mode="gen"; chat.prefs=""; genText(act.plan,true); },1600); return; }
-    var g=act.go&&destById[act.go.toLowerCase()], chips=[];
-    if(g) chips.push({label:"Show me "+g.name,fn:function(){ openSheet(null); goDest(g); }});
-    if(brain.lastDest) chips.push({label:"Plan "+brain.lastDest.name+" for me",fn:function(){ send("Plan a trip to "+brain.lastDest.name); }});
+    var chips=[];
+    if(chat.itin) chips.push({label:"Change a day",fn:function(){ var ta=document.getElementById("chatInput"); ta.value="Change day 1: "; ta.focus(); }});
+    else if(brain.lastDest) chips.push({label:"Plan "+brain.lastDest.name+" for me",fn:function(){ send("Make me a day-by-day plan for "+brain.lastDest.name); }});
     setChips(chips);
   }
-  var body={messages:history_.slice(-12).map(function(m){ return {role:m.role,content:m.content}; }),context:ctx,images:(imgs||[]).map(function(i){ return {media_type:"image/jpeg",data:i.data}; })};
+  function errNote(e){ return e.v==="rate_limited"?"Opem AI is getting a lot of messages right now. Built-in answer for now:":e.v==="no_key"?"Opem AI isn't connected on the server. Built-in answer for now:":"Opem AI couldn't answer"+(e.detail?" ("+e.detail+")":"")+". Built-in answer for now:"; }
+  var body={messages:history_.slice(-12).map(function(m){ return {role:m.role,content:m.content}; }),context:aiContext(focus),cityIds:DESTS.map(function(d){ return d.id; }),images:(imgs||[]).map(function(i){ return {media_type:"image/jpeg",data:i.data}; })};
   fetch("api/chat",{method:"POST",headers:{"content-type":"application/json"},body:JSON.stringify(body)}).then(function(r){
     if(!r.ok) return r.json().catch(function(){ return {}; }).then(function(j){
-      var why=r.status===429?"Opem AI is getting a lot of messages right now.":r.status===503?"Opem AI isn't connected on the server (no API key).":r.status===413?"Those photos were too big to send.":"Opem AI couldn't answer"+(j&&j.detail?" ("+j.detail+")":"")+".";
       if(r.status===503){ remoteAI=false; setStatus(); }
-      fallback(why+" Built-in answer for now:");
+      fallback(r.status===413?"Those photos were too big to send. Built-in answer for now:":errNote({v:r.status===429?"rate_limited":r.status===503?"no_key":"upstream",detail:j&&j.detail}));
     });
-    var ct=r.headers.get("content-type")||"";
-    if(ct.indexOf("json")>=0||!r.body||!r.body.getReader) return r.text().then(function(t){ var j=null; try{ j=JSON.parse(t); }catch(e){} done(j&&typeof j.text==="string"?j.text:t); });
-    var rd=r.body.getReader(), dec=new TextDecoder(), full="";
-    return (function pump(){ return rd.read().then(function(x){ if(x.done){ full+=dec.decode(); return done(full); } full+=dec.decode(x.value,{stream:true}); show(full); return pump(); }); })();
-  }).catch(function(){ fallback("No connection to Opem AI. Built-in answer for now:"); });
+    var line="", rd=r.body&&r.body.getReader?r.body.getReader():null, dec=new TextDecoder();
+    function handle(s){ s=s.trim(); if(!s) return; var ev; try{ ev=JSON.parse(s); }catch(e){ full+=s; show(); return; }
+      if(ev.t==="text"){ full+=ev.v; show(); }
+      else if(ev.t==="status") status(ev.v);
+      else if(ev.t==="act"){ acts.push(ev); try{ runAct(ev,el); }catch(e){} }
+      else if(ev.t==="error") gotErr=ev;
+      else if(ev.t==="text_plain"){ full+=ev.v; show(); } }
+    if(!rd) return r.text().then(function(t){ t.split("\n").forEach(handle); done(); });
+    return (function pump(){ return rd.read().then(function(x){
+      if(x.done){ line+=dec.decode(); line.split("\n").forEach(handle); return done(); }
+      line+=dec.decode(x.value,{stream:true}); var parts=line.split("\n"); line=parts.pop(); parts.forEach(handle); return pump(); }); })();
+  }).catch(function(){ if(full) done(); else fallback("No connection to Opem AI. Built-in answer for now:"); });
 }
+document.getElementById("aiView").querySelector("button").onclick=clearAiView;
 /* the city panel can be dragged or tapped down to a thin bar, so the whole map shows; the Opem bar stays */
 (function(){
   var gl=document.getElementById("glance"), grab=document.getElementById("glanceGrab"), h2=document.getElementById("p-title"), y0=null, dy=0, moved=false;
