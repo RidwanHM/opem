@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-19e">
+<meta name="opem-build" content="2026-11-19f">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -44,7 +44,8 @@ html,body{height:100%;margin:0}
 body{background:var(--space);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;overflow:hidden;-webkit-font-smoothing:antialiased}
 button{font:inherit;color:inherit;background:none;border:0;padding:0;cursor:pointer}
 button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.app{position:relative;height:100%;overflow:hidden}
+.app{position:fixed;top:0;left:0;right:0;bottom:0;height:100%;height:100lvh;overflow:hidden}
+@supports (height:100lvh){ html,body{min-height:100lvh} }
 #map{position:absolute;inset:0;width:100%;height:100%;touch-action:none;display:block;cursor:grab}
 #map.dragging{cursor:grabbing}
 #pins{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;isolation:isolate}
