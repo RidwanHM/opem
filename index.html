@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-19c">
+<meta name="opem-build" content="2026-11-19d">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -11,7 +11,7 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Opem">
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Opem Travel Globe</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -50,7 +50,7 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 #pins{position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:0;isolation:isolate}
 
 /* top bar */
-.top{position:absolute;top:0;left:0;right:0;padding:14px 16px 0;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.top{position:absolute;top:0;left:0;right:0;padding:calc(14px + env(safe-area-inset-top,0px)) 16px 0;display:flex;flex-direction:column;gap:10px;pointer-events:none}
 .top > *{pointer-events:auto}
 .bar{display:flex;align-items:center;gap:10px}
 .brand{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.02em;margin-right:auto;display:flex;align-items:center;gap:8px}
@@ -526,7 +526,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   .visit{margin:0;left:24px;bottom:calc(var(--tb) + 12px);right:auto;width:440px;max-height:72%}
   .spin-panel{margin:0;left:24px;bottom:calc(var(--tb) + 12px);right:auto;width:440px}
   .dock{margin:0;left:24px;bottom:calc(var(--tb) + 12px);width:420px}
-  .top{padding:20px 24px 0}
+  .top{padding:calc(20px + env(safe-area-inset-top,0px)) 24px 0}
   .sheet{margin:0 24px 0 auto;right:0;left:auto;width:440px;bottom:calc(var(--tb) + 4px)}
 }
 @media (prefers-reduced-motion:reduce){
