@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20h">
+<meta name="opem-build" content="2026-11-20i">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -55,6 +55,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .top > *{pointer-events:auto}
 .bar{display:flex;align-items:center;gap:10px}
 .brand{font-family:var(--display);font-weight:700;font-size:20px;letter-spacing:.02em;margin-right:auto;display:flex;align-items:center;gap:8px}
+.zone{display:inline-flex;align-items:center;gap:6px;font:800 10px/1 Figtree,system-ui,sans-serif;letter-spacing:.18em;text-transform:uppercase;color:var(--accent);margin:0 0 4px}
+.zone i{width:7px;height:7px;border-radius:50%;background:currentColor;display:block}
+.zone.travel{color:#7fc8ff}
+.zone em{font-style:normal;letter-spacing:.06em;text-transform:none;font-weight:700;font-size:9.5px;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:2px 6px;opacity:.8}
 .brand i{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(255,178,62,.22);display:block}
 .glass{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .pill{height:38px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;white-space:nowrap}
@@ -658,8 +662,22 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
   .reel.roll b,.reel.lock,.result,body[data-visit] .visit{animation:none}
 }
 </style>
+<style>
+#splash{position:fixed;inset:0;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:26px;background:#060913;transition:opacity .4s ease,visibility .4s}
+#splash.out{opacity:0;visibility:hidden}
+#splash svg{width:92px;height:92px;animation:spIn .7s cubic-bezier(.2,.8,.2,1) both}
+#splash p{margin:0;font:700 22px/1.2 Unbounded,Figtree,system-ui,sans-serif;letter-spacing:.02em;color:#eef2fb;animation:spUp .7s .15s ease-out both}
+#splash p b{color:#ffb23e;font-weight:800}
+#splash small{position:absolute;bottom:calc(34px + env(safe-area-inset-bottom,0px));font:600 11px/1 Figtree,system-ui,sans-serif;letter-spacing:.28em;color:rgba(238,242,251,.45);animation:spUp .7s .3s ease-out both}
+@keyframes spIn{from{opacity:0;transform:scale(.6)}to{opacity:1;transform:none}}
+@keyframes spUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion:reduce){#splash svg,#splash p,#splash small{animation:none}}
+</style>
 </head>
 <body data-mode="globe">
+<div id="splash" aria-hidden="true"><svg viewBox="0 0 100 100"><circle cx="50" cy="50" r="31" fill="none" stroke="#ffb23e" stroke-width="22"/></svg><p><b>Opem</b> the world</p><small>OPEM WORLD · OPEM TRAVEL</small></div>
+<script>(function(){ var t0=Date.now(), done=false; function hide(){ if(done) return; done=true; var el=document.getElementById("splash"); if(!el) return; setTimeout(function(){ el.classList.add("out"); setTimeout(function(){ el.remove(); },450); },Math.max(0,900-(Date.now()-t0))); }
+  if(document.readyState==="complete") hide(); else window.addEventListener("load",hide); setTimeout(hide,3500); })();</script>
 <div class="app">
   <canvas id="map" aria-label="Globe. Drag to spin, pinch or scroll to zoom."></canvas>
   <div id="rmap" aria-label="Street map"></div>
@@ -706,7 +724,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 
   <section class="sheet glass" id="chat" role="dialog" aria-label="Opem companion chat">
     <header>
-      <div><h2>Opem companion</h2><small id="chatStatus">Connecting to the assistant…</small></div>
+      <div><span class="zone travel"><i></i>OPEM Travel<em>Free in beta</em></span><h2>Opem companion</h2><small id="chatStatus">Connecting to the assistant…</small></div>
       <button class="pill" type="button" id="newPlan" style="margin-left:auto;border:1px solid var(--line);height:34px">New plan</button>
       <button class="x" type="button" data-close aria-label="Close chat" style="margin-left:0">&times;</button>
     </header>
@@ -729,14 +747,14 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 
   <nav class="tabbar" id="tabbar" aria-label="Main">
     <button type="button" class="tab on" data-tab="home" aria-label="Globe" aria-current="page"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.6 12 4l8 6.6V19a1.6 1.6 0 0 1-1.6 1.6H15v-5.2H9v5.2H5.6A1.6 1.6 0 0 1 4 19z" fill="currentColor"/></svg></button>
-    <button type="button" class="tab" data-tab="visited" aria-label="Visited countries"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4.5M6 4.5h10.5l-2 3.8 2 3.7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
+    <button type="button" class="tab" data-tab="visited" aria-label="OPEM World: my world and passport"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 21V4.5M6 4.5h10.5l-2 3.8 2 3.7H6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button>
     <button type="button" class="tab" data-tab="opem" aria-label="Chat with Opem"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11.5c0 4-3.6 7.2-8 7.2-1 0-2-.2-2.9-.5L4.5 19.6l1.3-3.6A6.9 6.9 0 0 1 4 11.5c0-4 3.6-7.2 8-7.2s8 3.2 8 7.2z" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"/></svg></button>
-    <button type="button" class="tab" data-tab="trips" aria-label="Your trips"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="7" width="17" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3.5 12.5h17" fill="none" stroke="currentColor" stroke-width="2"/></svg><span class="tbadge" id="tabTrips" hidden></span></button>
+    <button type="button" class="tab" data-tab="trips" aria-label="OPEM Travel: your trips"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="7" width="17" height="12.5" rx="2.5" fill="none" stroke="currentColor" stroke-width="2"/><path d="M9 7V5.5A1.5 1.5 0 0 1 10.5 4h3A1.5 1.5 0 0 1 15 5.5V7M3.5 12.5h17" fill="none" stroke="currentColor" stroke-width="2"/></svg><span class="tbadge" id="tabTrips" hidden></span></button>
   </nav>
 
   <section class="sheet glass" id="book" role="dialog" aria-label="Book a hotel">
     <header>
-      <div><h2 id="bkTitle">Book a hotel</h2><small id="bkSub"></small></div>
+      <div><span class="zone travel"><i></i>OPEM Travel<em>Free in beta</em></span><h2 id="bkTitle">Book a hotel</h2><small id="bkSub"></small></div>
       <span class="testbadge" id="bkMode" hidden>TEST</span>
       <button class="x" type="button" data-close aria-label="Close booking">&times;</button>
     </header>
@@ -745,7 +763,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 
   <section class="sheet glass" id="trips" role="dialog" aria-label="Your trips">
     <header>
-      <div><h2>Your trips</h2><small>Planned trips, saved places and earlier travels</small></div>
+      <div><span class="zone travel"><i></i>OPEM Travel<em>Free in beta</em></span><h2>Your trips</h2><small>Planned trips, saved places and earlier travels</small></div>
       <button class="x" type="button" data-close aria-label="Close trips">&times;</button>
     </header>
     <div class="body">
@@ -777,7 +795,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 
   <section class="visit glass" id="visit" role="dialog" aria-label="My world: countries visited">
     <button class="grab" type="button" id="visitGrab" aria-expanded="true" aria-label="Hide or show My world"><span></span></button>
-    <div class="card-head"><div><h1 id="visitTitle">My world</h1></div>
+    <div class="card-head"><div><span class="zone world"><i></i>OPEM World<em>Free in beta</em></span><h1 id="visitTitle">My world</h1></div>
       <button class="pill backworld" type="button" id="visitBack" hidden>&#8592; My world</button>
       <button class="x" type="button" id="visitClose" aria-label="Close my world">&times;</button></div>
     <div class="fcard" id="visitCard" hidden></div>
