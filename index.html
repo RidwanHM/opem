@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20e">
+<meta name="opem-build" content="2026-11-20f">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -2320,26 +2320,58 @@ function drawStamp(g,name,cx,cy,s,opts){
   g.restore();
 }
 // ---- the share picture and video (vertical, 9:16)
+function drawPaperStampC(g,name,cx,cy,s,k,a){
+  var c=countryByName(name), f=c&&c.f, h=hashStr(name), ink=PAPER_INKS[h%PAPER_INKS.length], shape=["round","rect","ticket","oval"][(h>>3)%4], rot=((((h>>6)%19)-9))*Math.PI/180;
+  g.save(); g.translate(cx,cy); g.rotate(rot); g.scale(k,k); g.globalAlpha=a*.88; g.globalCompositeOperation="multiply"; g.strokeStyle=ink; g.fillStyle=ink;
+  var w=s*1.05, hh=shape==="round"?s:s*.88;
+  function outline(inset,lw,dash){ g.lineWidth=lw; g.setLineDash(dash||[]); g.beginPath();
+    if(shape==="round") g.arc(0,0,s/2-inset,0,6.3); else if(shape==="oval") g.ellipse(0,0,w/2-inset,hh/2-inset,0,0,6.3); else rr(g,-w/2+inset,-hh/2+inset,w-2*inset,hh-2*inset,shape==="ticket"?s*.12:s*.04); g.stroke(); g.setLineDash([]); }
+  outline(0,s*.04,shape==="ticket"?[s*.07,s*.05]:null); outline(s*.06,s*.015);
+  g.textAlign="center"; g.textBaseline="middle";
+  if(f){ g.globalCompositeOperation="source-over"; g.globalAlpha=a*.92; g.font=Math.round(s*.22)+"px system-ui, 'Apple Color Emoji', sans-serif"; g.fillText(flagOf(f),0,-s*.2); g.globalCompositeOperation="multiply"; g.globalAlpha=a*.88; }
+  var nm=name.toUpperCase(), fs=s*.12; g.font="800 "+fs+"px Unbounded, Figtree, system-ui, sans-serif"; while(g.measureText(nm).width>s*.8&&fs>s*.065){ fs-=1; g.font="800 "+fs+"px Unbounded, Figtree, system-ui, sans-serif"; }
+  g.fillText(nm,0,s*.04); g.font="600 "+(s*.075)+"px Figtree, system-ui, sans-serif"; g.fillText(f?(CONTNAME[f.cont]||""):"",0,s*.16);
+  g.font="800 "+(s*.07)+"px Figtree, system-ui, sans-serif"; g.fillText("✈ E N T R Y",0,s*.28);
+  g.restore();
+}
+function paperBg(g,W,H,u){
+  g.fillStyle="#f3eddc"; g.fillRect(0,0,W,H);
+  var gl=g.createRadialGradient(W/2,H*.42,0,W/2,H*.42,W*.7); gl.addColorStop(0,"rgba(255,255,255,.55)"); gl.addColorStop(1,"rgba(255,255,255,0)"); g.fillStyle=gl; g.fillRect(0,0,W,H);
+  g.save(); g.lineWidth=1.1*u; g.strokeStyle="rgba(52,96,150,.075)"; for(var r=6*u;r<H;r+=7*u){ g.beginPath(); g.arc(W/2,H*.42,r,0,6.3); g.stroke(); }
+  g.strokeStyle="rgba(150,110,50,.05)"; g.lineWidth=1*u; for(var x=-H;x<W+H;x+=9*u){ g.beginPath(); g.moveTo(x,0); g.lineTo(x+H*.58,H); g.stroke(); }
+  g.strokeStyle="rgba(60,120,110,.05)"; for(var x2=-H;x2<W+H;x2+=9*u){ g.beginPath(); g.moveTo(x2,0); g.lineTo(x2-H*.58,H); g.stroke(); }
+  // watermark globe
+  g.globalAlpha=.07; g.strokeStyle="#163a6b"; g.lineWidth=5*u; var R=W*.3, cx=W/2, cy=H*.5;
+  g.beginPath(); g.arc(cx,cy,R,0,6.3); g.stroke(); g.beginPath(); g.ellipse(cx,cy,R*.41,R,0,0,6.3); g.stroke();
+  g.beginPath(); g.moveTo(cx-R,cy); g.lineTo(cx+R,cy); g.moveTo(cx-R*.83,cy-R*.5); g.lineTo(cx+R*.83,cy-R*.5); g.moveTo(cx-R*.83,cy+R*.5); g.lineTo(cx+R*.83,cy+R*.5); g.stroke();
+  g.restore();
+  var sp=g.createLinearGradient(0,0,W*.08,0); sp.addColorStop(0,"rgba(0,0,0,.18)"); sp.addColorStop(1,"rgba(0,0,0,0)"); g.fillStyle=sp; g.fillRect(0,0,W*.08,H);
+}
 function passFrame(g,W,H,t,total){
-  var bg=g.createLinearGradient(0,0,0,H); bg.addColorStop(0,"#0b1630"); bg.addColorStop(1,"#060913"); g.fillStyle=bg; g.fillRect(0,0,W,H);
-  var hs=hashStr("stars"); g.fillStyle="#fff"; for(var i=0;i<90;i++){ hs=Math.imul(hs^(hs>>>13),1274126177)>>>0; var x=(hs%1000)/1000*W; hs=Math.imul(hs^(hs>>>11),2246822519)>>>0; var y=(hs%1000)/1000*H; g.globalAlpha=.15+((hs>>5)%60)/100; g.fillRect(x,y,1.6,1.6); } g.globalAlpha=1;
-  var u=W/720, list=visited.slice(), n=list.length, cols=n>12?4:3, cell=Math.floor((W-80*u)/cols), maxRows=Math.floor((H-560*u)/(cell*.98)), show=list.slice(0,cols*maxRows), more=n-show.length;
-  g.textAlign="left"; g.textBaseline="alphabetic";
-  g.fillStyle="#ffb23e"; g.beginPath(); g.arc(58*u,92*u,13*u,0,6.3); g.fill();
-  g.fillStyle="#eef3f8"; g.font="800 "+(40*u)+"px Unbounded, Figtree, system-ui, sans-serif"; g.fillText("Opem",82*u,106*u);
-  g.fillStyle="#9fb2c6"; g.font="700 "+(22*u)+"px Figtree, system-ui, sans-serif"; g.fillText("MY TRAVEL PASSPORT",44*u,170*u);
-  var shown=total?Math.min(show.length,Math.floor(Math.max(0,t-900)/260)+ (t>900?1:0)):show.length, cnt=total?Math.min(n,Math.round(n*shown/Math.max(1,show.length))):n;
+  var u=W/720; paperBg(g,W,H,u);
+  var list=visited.slice(), n=list.length, cols=n>4?3:2, cell=Math.floor((W-120*u)/cols), rowH=cell*.92, top=430*u, maxRows=Math.max(1,Math.floor((H-top-230*u)/rowH)), show=list.slice(0,cols*maxRows), more=n-show.length;
+  // header: Opem passport, like the top of a real passport page
+  g.textBaseline="alphabetic"; g.textAlign="center";
+  g.fillStyle="#ffb23e"; g.beginPath(); g.arc(W/2-118*u,96*u,15*u,0,6.3); g.fill();
+  g.fillStyle="#132548"; g.font="800 "+(54*u)+"px Unbounded, Figtree, system-ui, sans-serif"; g.fillText("OPEM",W/2+18*u,116*u);
+  g.fillStyle="#5a6a86"; g.font="800 "+(19*u)+"px Figtree, system-ui, sans-serif"; g.fillText("P A S S P O R T   ·   P A S S E P O R T   ·   P A S S",W/2,160*u);
+  var shown=total?Math.min(show.length,Math.max(0,Math.floor((t-900)/260)+1)):show.length, cnt=total?Math.min(n,Math.round(n*shown/Math.max(1,show.length))):n;
   var pc=passCounts(), known=countries.filter(function(c){ return c.f; }).length||195, pct=Math.round(cnt/known*100);
-  g.fillStyle="#ffb23e"; g.font="800 "+(96*u)+"px Unbounded, Figtree, system-ui, sans-serif"; g.fillText(String(cnt),44*u,290*u);
-  var w1=g.measureText(String(cnt)).width; g.fillStyle="#eef3f8"; g.font="700 "+(30*u)+"px Figtree, system-ui, sans-serif"; g.fillText(cnt===1?"country":"countries",44*u+w1+16*u,286*u);
-  g.fillStyle="#9fb2c6"; g.font="600 "+(26*u)+"px Figtree, system-ui, sans-serif"; g.fillText(pct+"% of the world · "+pc.conts+" continent"+(pc.conts===1?"":"s"),44*u,336*u);
-  g.strokeStyle="rgba(255,255,255,.12)"; g.lineWidth=2*u; g.beginPath(); g.moveTo(44*u,372*u); g.lineTo(W-44*u,372*u); g.stroke();
-  var top=410*u;
-  show.forEach(function(name,i){ if(i>=shown) return; var r=Math.floor(i/cols), col=i%cols, cx=40*u+cell*col+cell/2, cy=top+cell*.98*r+cell/2;
-    var age=total?t-(900+i*260):9999, k=age<0?0:age<220?1.9-0.9*(age/220):age<300?1-.04*Math.sin((age-220)/80*Math.PI):1, a=age<0?0:Math.min(1,age/120);
-    drawStamp(g,name,cx,cy,cell*.78,{scale:k,alpha:a}); });
-  if(more>0&&(!total||shown>=show.length)){ g.fillStyle="#9fb2c6"; g.font="700 "+(26*u)+"px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.fillText("+ "+more+" more stamps",W/2,H-150*u); }
-  g.textAlign="center"; g.fillStyle="rgba(238,243,248,.7)"; g.font="600 "+(22*u)+"px Figtree, system-ui, sans-serif"; g.fillText("Collect yours at opem-six.vercel.app",W/2,H-70*u);
+  g.strokeStyle="rgba(19,37,72,.25)"; g.lineWidth=2*u; g.beginPath(); g.moveTo(70*u,190*u); g.lineTo(W-70*u,190*u); g.stroke();
+  g.textAlign="left"; g.fillStyle="#6a7891"; g.font="800 "+(17*u)+"px Figtree, system-ui, sans-serif";
+  g.fillText("COUNTRIES",70*u,236*u); g.fillText("OF THE WORLD",300*u,236*u); g.fillText("CONTINENTS",520*u,236*u);
+  g.fillStyle="#132548"; g.font="800 "+(64*u)+"px Unbounded, Figtree, system-ui, sans-serif"; g.fillText(String(cnt),68*u,310*u);
+  g.font="800 "+(44*u)+"px Unbounded, Figtree, system-ui, sans-serif"; g.fillText(pct+"%",298*u,304*u); g.fillText(String(pc.conts),518*u,304*u);
+  g.fillStyle="#5a6a86"; g.font="800 "+(16*u)+"px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.fillText("E N T R I E S   ·   S T A M P S",W/2,385*u);
+  show.forEach(function(name,i){ if(i>=shown) return; var r=Math.floor(i/cols), col=i%cols, cx=60*u+cell*col+cell/2, cy=top+rowH*r+rowH/2;
+    var age=total?t-(900+i*260):9999, k=age<0?0:age<200?1.8-0.8*(age/200):age<290?1-.05*Math.sin((age-200)/90*Math.PI):1, a=age<0?0:Math.min(1,age/110);
+    drawPaperStampC(g,name,cx,cy,cell*.74,k,a); });
+  if(more>0&&(!total||shown>=show.length)){ g.fillStyle="#5a6a86"; g.font="700 "+(24*u)+"px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.fillText("+ "+more+" more stamps in my Opem passport",W/2,H-190*u); }
+  // machine-readable lines at the bottom, like a real passport
+  g.textAlign="left"; g.fillStyle="#2c3a58"; g.font="600 "+(25*u)+"px ui-monospace, Menlo, 'Courier New', monospace";
+  var l1=("P<OPEM<<WORLD<TRAVELLER<<<<<<<<<<<<<<<<<<<<").slice(0,30), l2=(String(n).padStart(3,"0")+"STAMPS<<"+pc.conts+"CONT<<"+pct+"PCT<<<<<<<<<<<<<<<<").slice(0,30);
+  g.fillText(l1,64*u,H-118*u); g.fillText(l2,64*u,H-82*u);
+  g.textAlign="center"; g.fillStyle="#6a7891"; g.font="700 "+(19*u)+"px Figtree, system-ui, sans-serif"; g.fillText("Get your own passport at opem-six.vercel.app",W/2,H-34*u);
 }
 function passPicture(){
   var o=document.getElementById("passShareOut"), c=document.createElement("canvas"); c.width=1080; c.height=1920; passFrame(c.getContext("2d"),1080,1920,0,0);
