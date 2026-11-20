@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20b">
+<meta name="opem-build" content="2026-11-20c">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -1411,8 +1411,9 @@ function render(){
     ctx.globalAlpha=1;
   }
   // things Opem's AI put on the globe: a route, a spot
-  if(farA>0&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&(aiRoute||aiSpot)){
-    ctx.globalAlpha=farA; ctx.textBaseline="middle"; ctx.font="700 12px Figtree, system-ui, sans-serif";
+  var rA=1-smooth(z,.3,.75);
+  if(rA>0&&!state.dest&&!visitMode&&!(typeof J!=="undefined"&&J.on)&&(aiRoute||aiSpot)){
+    ctx.globalAlpha=rA; ctx.textBaseline="middle"; ctx.font="700 12px Figtree, system-ui, sans-serif";
     if(aiRoute){
       var rp=aiRoute.stops.map(function(s){ return [s.lon,s.lat]; }), prog=reduce?1:clamp((performance.now()-aiRoute.t0)/1600,0,1), segs=rp.length-1, upto=prog*segs;
       ctx.beginPath(); for(var ri=0;ri<segs;ri++){ if(ri>=upto) break; var a0=rp[ri], a1=rp[ri+1], f=Math.min(1,upto-ri), mid=d3.geoInterpolate(a0,a1)(f); path({type:"LineString",coordinates:[a0,mid]}); }
@@ -3114,6 +3115,7 @@ function closeSpin(){
   if(!spinEl.classList.contains("open")) return;
   cancelAnimationFrame(spinRaf); spinTimers.forEach(clearTimeout); spinTimers=[]; spinning=false; pickN.disabled=pickV.disabled=false;
   spinEl.classList.remove("open"); dock.style.visibility="visible"; fxc.clearRect(0,0,fx.width,fx.height);
+  if(aiRoute&&aiRoute.spin){ aiRoute=null; draw(); }
 }
 function confetti(x,y,bg){
   if(reduce) return;
@@ -3242,7 +3244,9 @@ function spin(){
   var finals=[d.name,n+" nights",v.t], pick=[function(){return rnd(pool).d.name;},function(){return (spinN||rnd(NIGHTS))+" nights";},function(){return (spinV||rnd(VIBES)).t;}];
   pickN.disabled=pickV.disabled=true;
   var from=spinFromEl.value, org=[ORIG[from][0],ORIG[from][1]], mid=d3.geoInterpolate(org,d.c)(.62);
-  function reveal(){ spinning=false; pickN.disabled=pickV.disabled=false; spinGo.disabled=false; spinGo.textContent="Spin again"; showResult(spinPlan(d,n,v,c.stay),v); flyTo(d.c[0],clamp(d.c[1]-32,-60,40),0,1000); }
+  function reveal(){ spinning=false; pickN.disabled=pickV.disabled=false; spinGo.disabled=false; spinGo.textContent="Spin again"; showResult(spinPlan(d,n,v,c.stay),v); flyTo(d.c[0],clamp(d.c[1]-32,-60,40),0,1000);
+    // keep the flight on the globe: a glowing arc with a little plane flying it
+    aiMark=null; aiSpot=null; aiRoute={stops:[{name:from,lon:org[0],lat:org[1]},{name:d.name,lon:d.c[0],lat:d.c[1]}],t0:performance.now()-1600,spin:true}; syncAiPins(); animRoute(); draw(); }
   function finish(){
     if(reduce) return reveal();
     spinGo.textContent="Flying to "+d.name+"…";
