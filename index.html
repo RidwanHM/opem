@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20i">
+<meta name="opem-build" content="2026-11-20j">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -59,6 +59,10 @@ button:focus-visible,input:focus-visible{outline:2px solid var(--accent);outline
 .zone i{width:7px;height:7px;border-radius:50%;background:currentColor;display:block}
 .zone.travel{color:#7fc8ff}
 .zone em{font-style:normal;letter-spacing:.06em;text-transform:none;font-weight:700;font-size:9.5px;color:var(--ink);border:1px solid var(--line);border-radius:999px;padding:2px 6px;opacity:.8}
+.brand .bzone{color:var(--accent);font-weight:700;margin-left:-2px;display:grid}
+.brand .bzone span{grid-area:1/1;transition:opacity .3s ease,transform .3s ease}
+.brand .bz-w,[data-visit] .brand .bz-t{opacity:0;transform:translateY(6px)}
+[data-visit] .brand .bz-w{opacity:1;transform:none}
 .brand i{width:11px;height:11px;border-radius:50%;background:var(--accent);box-shadow:0 0 0 4px rgba(255,178,62,.22);display:block}
 .glass{background:var(--panel);border:1px solid var(--line);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px)}
 .pill{height:38px;padding:0 14px;border-radius:999px;display:inline-flex;align-items:center;gap:8px;font-weight:600;font-size:14px;white-space:nowrap}
@@ -686,7 +690,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 
   <div class="top">
     <div class="bar">
-      <button class="brand only-globe" id="brandBtn" type="button" aria-label="Opem: back to the main globe"><i></i>Opem</button>
+      <button class="brand only-globe" id="brandBtn" type="button" aria-label="Opem: back to the main globe"><i></i>Opem<b class="bzone"><span class="bz-t">Travel</span><span class="bz-w">World</span></b></button>
       <button class="pill glass only-dest" id="backBtn" type="button" aria-label="Back to the globe">&#8592; Globe</button>
       <div class="place only-dest" id="placeTitle" style="margin-right:auto"></div>
       <button class="pill glass only-globe" id="visitBtn" type="button" aria-pressed="false">Visited</button>
