@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20f">
+<meta name="opem-build" content="2026-11-20g">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -2373,11 +2373,20 @@ function passFrame(g,W,H,t,total){
   g.fillText(l1,64*u,H-118*u); g.fillText(l2,64*u,H-82*u);
   g.textAlign="center"; g.fillStyle="#6a7891"; g.font="700 "+(19*u)+"px Figtree, system-ui, sans-serif"; g.fillText("Get your own passport at opem-six.vercel.app",W/2,H-34*u);
 }
+/* iPhone/iPad Safari ignores "download" on made-in-page pictures and videos, so there
+   Download opens the phone's own menu, where "Save Image" / "Save Video" puts it in Photos. */
+var IOS=/iP(hone|ad|od)/.test(navigator.userAgent)||(navigator.platform==="MacIntel"&&navigator.maxTouchPoints>1);
+function saveVia(a,f){
+  if(!a||!f||!IOS||!navigator.canShare) return; try{ if(!navigator.canShare({files:[f]})) return; }catch(e){ return; }
+  a.onclick=function(ev){ ev.preventDefault(); navigator.share({files:[f]}).catch(function(){}); };
+  var vid=/^video/.test(f.type); a.textContent=vid?"Save video":"Save to Photos";
+  var n=a.closest(".actions"); n=n&&n.parentNode&&n.parentNode.querySelector(".note"); if(n) n.textContent='Tap "'+a.textContent+'" and pick "'+(vid?"Save Video":"Save Image")+'" to put it in Photos. Share opens Instagram, Snapchat, TikTok and messages.';
+}
 function passPicture(){
   var o=document.getElementById("passShareOut"), c=document.createElement("canvas"); c.width=1080; c.height=1920; passFrame(c.getContext("2d"),1080,1920,0,0);
   var data; try{ data=c.toDataURL("image/png"); }catch(e){ o.innerHTML='<p class="note">The picture could not be made in this browser.</p>'; return; }
-  o.innerHTML='<img class="jpic" alt="Picture of your travel passport" src="'+data+'"><div class="actions"><button class="btn primary" type="button" id="psPicShare" hidden>Share picture</button><a class="btn" download="opem-passport.png" href="'+data+'">Download</a></div><p class="note" id="psHint">Download it and post it, or share it straight from your phone.</p>';
-  try{ c.toBlob(function(b){ if(!b) return; var f=new File([b],"opem-passport.png",{type:"image/png"}), btn=document.getElementById("psPicShare");
+  o.innerHTML='<img class="jpic" alt="Picture of your travel passport" src="'+data+'"><div class="actions"><button class="btn primary" type="button" id="psPicShare" hidden>Share picture</button><a class="btn" id="psPicSave" download="opem-passport.png" href="'+data+'">Download</a></div><p class="note" id="psHint">Download it and post it, or share it straight from your phone.</p>';
+  try{ c.toBlob(function(b){ if(!b) return; var f=new File([b],"opem-passport.png",{type:"image/png"}), btn=document.getElementById("psPicShare"); saveVia(document.getElementById("psPicSave"),f);
     if(btn&&navigator.canShare&&navigator.canShare({files:[f]})){ btn.hidden=false; btn.onclick=function(){ navigator.share({files:[f],title:"My Opem passport"}).catch(function(){}); }; document.getElementById("psHint").textContent="Share picture opens your phone's share menu: Instagram, Snapchat, TikTok, messages."; } },"image/png"); }catch(e){}
 }
 var passVidBusy=false;
@@ -2399,7 +2408,7 @@ function passVideo(){
     var url=URL.createObjectURL(blob), v=document.createElement("video"); v.src=url; v.controls=true; v.playsInline=true; v.muted=true; v.loop=true; v.className="jvid";
     var wrap=document.getElementById("psWrap"); wrap.innerHTML=""; wrap.appendChild(v); msg.textContent="Your passport video is ready ("+Math.round(total/1000)+" seconds, vertical).";
     document.getElementById("psActs").hidden=false; var sv=document.getElementById("psVSave"); sv.href=url; sv.setAttribute("download",name);
-    var f=null, sb=document.getElementById("psVShare"), hint=document.getElementById("psVHint"); try{ f=new File([blob],name,{type:type}); }catch(e){}
+    var f=null, sb=document.getElementById("psVShare"), hint=document.getElementById("psVHint"); try{ f=new File([blob],name,{type:type}); }catch(e){} saveVia(sv,f);
     if(f&&navigator.canShare&&navigator.canShare({files:[f]})){ sb.hidden=false; sb.onclick=function(){ navigator.share({files:[f],title:"My Opem passport"}).catch(function(){}); }; hint.textContent="Share video opens your phone's share menu. Pick Instagram, Snapchat or TikTok there."; }
     else hint.textContent="Download it and post it from your camera roll."+(mp4?"":" The file is WebM, which Instagram may not accept.");
     hint.hidden=false; };
@@ -3984,7 +3993,7 @@ function shareVideo(j){
     var wrap=document.getElementById("vWrap"); wrap.innerHTML=""; wrap.appendChild(v);
     msg.textContent="Your video is ready ("+Math.round(plan.total/1000)+" seconds, vertical).";
     document.getElementById("vActs").hidden=false; var sv=document.getElementById("vSave"); sv.href=url; sv.setAttribute("download",name);
-    var f=null, sb=document.getElementById("vShare"), hint=document.getElementById("vHint"); try{ f=new File([blob],name,{type:type}); }catch(e){}
+    var f=null, sb=document.getElementById("vShare"), hint=document.getElementById("vHint"); try{ f=new File([blob],name,{type:type}); }catch(e){} saveVia(sv,f);
     if(f&&navigator.canShare&&navigator.canShare({files:[f]})){ sb.hidden=false; sb.onclick=function(){ navigator.share({files:[f],title:"Opem · "+j.title}).catch(function(){}); };
       hint.textContent="Share video opens your phone's share menu. Pick Instagram, Snapchat or TikTok there."+(mp4?"":" This browser made a WebM file, which Instagram may not accept."); }
     else hint.textContent="This browser cannot open the share menu for videos. Download it and post it from your camera roll."+(mp4?"":" The file is WebM, which Instagram may not accept; Safari or a newer Chrome makes MP4.");
@@ -4012,7 +4021,7 @@ function sharePicture(j){
   var c=journeyImage(j), data; try{ data=c.toDataURL("image/png"); }catch(e){ return shareOut('<p class="note">The picture could not be made in this browser.</p>'); }
   var name="opem-"+normName(j.title).replace(/ +/g,"-")+".png";
   shareOut('<img class="jpic" alt="Picture of the journey '+esc(j.title)+'" src="'+data+'"><div class="actions"><button class="btn primary" type="button" id="jPicShare" hidden>Share picture</button><a class="btn" id="jPicSave" download="'+esc(name)+'" href="'+data+'">Download</a></div><p class="note">On a phone you can also hold a finger on the picture to save it.</p>');
-  try{ c.toBlob(function(b){ if(!b) return; var f=new File([b],name,{type:"image/png"}), btn=document.getElementById("jPicShare");
+  try{ c.toBlob(function(b){ if(!b) return; var f=new File([b],name,{type:"image/png"}), btn=document.getElementById("jPicShare"); saveVia(document.getElementById("jPicSave"),f);
     if(btn&&navigator.canShare&&navigator.canShare({files:[f]})){ btn.hidden=false; btn.onclick=function(){ navigator.share({files:[f],title:"Opem · "+j.title}).catch(function(){}); }; } },"image/png"); }catch(e){}
 }
 syncTrips();
