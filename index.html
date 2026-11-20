@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20j">
+<meta name="opem-build" content="2026-11-20l">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -435,10 +435,18 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .passwrap.full .pbook{flex:1;min-height:0;max-width:480px;width:100%;margin:0 auto;gap:10px;padding-top:6px}
 .pstack{position:relative;flex:1;min-height:0;perspective:1800px;touch-action:none;user-select:none;-webkit-user-select:none}
 .pstack .ppage{position:absolute;inset:0;min-height:0;transform-origin:left center;backface-visibility:visible;-webkit-backface-visibility:visible;will-change:transform}
-.pstack .ppage.anim{transition:transform .5s cubic-bezier(.3,.7,.25,1),filter .5s}
 .pstack .ppage.back>*{visibility:hidden}
 .pstack .ppage.back{box-shadow:0 8px 22px rgba(0,0,0,.3)}
-.pstack .ppage .pshade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,0) 60%);opacity:0;visibility:visible}
+.pbend{position:absolute;inset:0;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;pointer-events:none}
+.pbs{position:absolute;top:0;bottom:0;transform-style:preserve-3d;-webkit-transform-style:preserve-3d;transform-origin:left center;will-change:transform}
+.pbf,.pbk{position:absolute;inset:0;overflow:hidden;backface-visibility:hidden;-webkit-backface-visibility:hidden}
+.pbk{transform:rotateY(180deg)}
+.pbk .ppage>*{visibility:hidden}
+.pbk .ppage{filter:brightness(.96) !important}
+.pbl{position:absolute;inset:0;pointer-events:none;opacity:0}
+.pbf .pbl{background:linear-gradient(90deg,rgba(20,14,0,.18),rgba(20,14,0,.5))}
+.pbk .pbl{background:linear-gradient(90deg,rgba(255,255,255,.55),rgba(255,255,255,0) 70%,rgba(0,0,0,.18))}
+.pcast{position:absolute;top:0;bottom:0;left:0;width:0;pointer-events:none;opacity:0;background:linear-gradient(90deg,rgba(0,0,0,0),rgba(0,0,0,.38) 55%,rgba(0,0,0,0));filter:blur(6px)}
 .passwrap.full .ppage.info dl{font-size:15px;gap:10px 16px;margin:16px 6px}
 .passwrap.full .ppage .ph{font-size:11px;margin:4px 0 14px}
 .passwrap.full .pgrid{gap:14px 14px;align-content:start}
@@ -2301,40 +2309,65 @@ function renderPass(){
   for(var i=0;i<list.length;i+=per){ pages.push('<div class="ppage"><p class="ph">ENTRIES · STAMPS</p><div class="pgrid">'+list.slice(i,i+per).map(paperStamp).join("")+'</div><span class="pnum">'+pages.length+"</span></div>"); }
   pp.innerHTML=pages.join("");
   var els=[].slice.call(pp.children), n=els.length, dots=box.querySelector(".pdots");
-  els.forEach(function(el){ var sh=document.createElement("i"); sh.className="pshade"; el.appendChild(sh); });
   passCur=clamp(passCur,0,n-1);
   dots.innerHTML=els.map(function(_,k){ return '<i data-k="'+k+'"></i>'; }).join("");
-  function setAng(el,deg){ el.style.transform="rotateY("+deg.toFixed(2)+"deg)"; el.classList.toggle("back",deg<-90); var sh=el.querySelector(".pshade"); if(sh) sh.style.opacity=String(Math.min(1,Math.abs(deg)/120)); }
-  function under(k,t){ if(els[k]) els[k].style.filter="brightness("+(0.72+0.28*t).toFixed(3)+")"; }
+  function setAng(el,deg){ el.style.transform="rotateY("+deg.toFixed(2)+"deg)"; el.classList.toggle("back",deg<-90); }
+  function under(k,t){ if(els[k]) els[k].style.filter="brightness("+(0.7+0.3*t).toFixed(3)+")"; }
   function layout(){
-    els.forEach(function(el,k){ el.classList.remove("anim"); el.style.filter=""; if(k<passCur){ setAng(el,-180); el.style.zIndex=k; el.style.visibility="hidden"; } else { setAng(el,0); el.style.zIndex=n-k+n; el.style.visibility=""; } });
+    els.forEach(function(el,k){ el.style.filter=""; if(k<passCur){ setAng(el,-180); el.style.zIndex=k; el.style.visibility="hidden"; } else { setAng(el,0); el.style.zIndex=n-k+n; el.style.visibility=""; } });
     [].forEach.call(dots.children,function(d,k){ d.classList.toggle("on",k===passCur); });
     box.querySelector(".pprev").disabled=passCur<=0; box.querySelector(".pnext").disabled=passCur>=n-1;
   }
-  var busy=false;
-  function flip(dir,from){ // dir 1 = next, -1 = previous; from = current angle when dragging
-    if(busy) return; var k=dir>0?passCur:passCur-1, el=els[k]; if(!el||(dir>0&&passCur>=n-1)) return;
-    busy=true; el.style.visibility=""; el.style.zIndex=3*n; if(from==null) setAng(el,dir>0?0:-180);
-    void el.offsetWidth; el.classList.add("anim"); if(els[k+1]) els[k+1].classList.add("anim");
-    var end=dir>0?-180:0, done=false; setAng(el,end); under(k+1,dir>0?1:0);
-    if(reduce){ el.classList.remove("anim"); }
-    if(navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
-    function fin(){ if(done) return; done=true; passCur+=dir; busy=false; layout(); }
-    el.addEventListener("transitionend",fin,{once:true}); setTimeout(fin,reduce?0:620);
+  /* page curl like a real book: the page is cut into thin strips chained along the page,
+     each turned a little more than the one before, so the paper bends in a curve, shows its
+     back, catches light on the fold and throws a shadow on the page below */
+  var N=24, WC=.5, bend=null, busy=false, cast=document.createElement("div"); cast.className="pcast"; pp.appendChild(cast);
+  function makeBend(k){
+    var el=els[k], W=pp.clientWidth, H=pp.clientHeight, sw=W/N, cls=el.className.replace(/\bback\b/,""), inner=el.innerHTML;
+    var root=document.createElement("div"); root.className="pbend"; root.style.zIndex=3*n; var parent=root, strips=[];
+    for(var i=0;i<N;i++){ var st=document.createElement("div"); st.className="pbs"; st.style.left=(i?sw:0)+"px"; st.style.width=(sw+.6)+"px";
+      var pos="position:absolute;inset:auto;left:"+(-i*sw)+"px;top:0;width:"+W+"px;height:"+H+"px;transform:none;filter:none;box-shadow:none;visibility:visible";
+      st.innerHTML='<div class="pbf"><div class="'+cls+'" style="'+pos+'">'+inner+'</div><i class="pbl"></i></div><div class="pbk"><div class="'+cls+'" style="'+pos.replace("left:"+(-i*sw),"left:"+(-(N-1-i)*sw))+'"></div><i class="pbl"></i></div>';
+      parent.appendChild(st); strips.push(st); parent=st; }
+    pp.appendChild(root); el.style.visibility="hidden";
+    return {k:k,root:root,strips:strips,W:W,p:-1};
   }
-  function snapBack(el,deg,k){ busy=true; el.classList.add("anim"); if(els[k+1]) els[k+1].classList.add("anim"); setAng(el,deg); under(k+1,deg===0?1:0); setTimeout(function(){ busy=false; layout(); },560); }
-  // drag the page with a finger, like turning a real page
+  function ease(t){ return t*t*(3-2*t); }
+  function setP(bd,p){ if(Math.abs(bd.p-p)<1e-4) return; bd.p=p;
+    var f=1-p*(1+WC), prev=0, R=Math.PI/180;
+    function ang(x){ return (p>=.999?180:178)*ease(clamp((x-f)/WC,0,1)); }
+    function fs(a){ return a<90?Math.sin(a*R)*.5:.5; } function bs(a){ return a>90?.12+Math.sin(a*R)*.5:.6; }
+    for(var i=0;i<N;i++){ var a0=ang(i/N), a1=ang((i+1)/N), a=ang((i+.5)/N), rel=a-prev; prev=a;
+      var st=bd.strips[i]; st.style.transform="rotateY("+(-rel).toFixed(2)+"deg)";
+      var fl=st.children[0].lastChild, bl=st.children[1].lastChild;
+      // light changes smoothly across each strip, so no seams show between them
+      fl.style.opacity=a>92?"0":"1"; fl.style.background="linear-gradient(90deg,rgba(25,18,0,"+fs(a0).toFixed(3)+"),rgba(25,18,0,"+fs(a1).toFixed(3)+"))";
+      bl.style.opacity=a<88?"0":"1"; bl.style.background="linear-gradient(90deg,rgba(255,255,255,"+(.6-bs(a1)).toFixed(3)+"),rgba(255,255,255,"+(.6-bs(a0)).toFixed(3)+"))"; }
+    var fx=clamp(f,0,1)*bd.W; cast.style.left=Math.max(0,fx-bd.W*.18)+"px"; cast.style.width=(bd.W*.3)+"px"; cast.style.opacity=(Math.sin(Math.min(1,p)*Math.PI)*.9).toFixed(3); cast.style.zIndex=3*n-1;
+    under(bd.k+1,p); }
+  function dropBend(){ if(bend){ bend.root.remove(); bend=null; } cast.style.opacity="0"; }
+  function animTo(bd,to,ms,done){ var from=bd.p, t0=performance.now(); busy=true;
+    if(reduce) ms=1;
+    (function step(now){ var t=clamp((now-t0)/ms,0,1), e=1-Math.pow(1-t,3); setP(bd,from+(to-from)*e); if(t<1) requestAnimationFrame(step); else { busy=false; done(); } })(t0); }
+  function flip(dir,fromBend){
+    if(busy) return; var k=dir>0?passCur:passCur-1; if(!els[k]||(dir>0&&passCur>=n-1)) return;
+    var bd=fromBend||makeBend(k); bend=bd; if(!fromBend) setP(bd,dir>0?0:1);
+    if(navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
+    var dist=Math.abs((dir>0?1:0)-bd.p);
+    animTo(bd,dir>0?1:0,fromBend?260+380*dist:720,function(){ passCur+=dir; dropBend(); layout(); });
+  }
+  function snapBack(bd,to){ animTo(bd,to,320,function(){ dropBend(); layout(); }); }
   var drag=null;
-  pp.addEventListener("pointerdown",function(e){ if(busy) return; drag={x:e.clientX,y:e.clientY,t:Date.now(),el:null,k:-1,dir:0,ang:0}; try{ pp.setPointerCapture(e.pointerId); }catch(_){} });
+  pp.addEventListener("pointerdown",function(e){ if(busy) return; drag={x:e.clientX,t:Date.now(),dir:0,bd:null}; try{ pp.setPointerCapture(e.pointerId); }catch(_){} });
   pp.addEventListener("pointermove",function(e){ if(!drag||busy) return; var dx=e.clientX-drag.x, w=pp.clientWidth||1;
-    if(!drag.dir){ if(Math.abs(dx)<6) return; drag.dir=dx<0?1:-1; drag.k=drag.dir>0?passCur:passCur-1; drag.el=els[drag.k];
-      if(!drag.el||(drag.dir>0&&passCur>=n-1)){ drag.el=null; return; } drag.el.style.visibility=""; drag.el.style.zIndex=3*n; }
-    if(!drag.el) return; var f=drag.dir>0?clamp(-dx/w,0,1):1-clamp(dx/w,0,1); drag.ang=-180*f; setAng(drag.el,drag.ang); under(drag.k+1,1-f); });
+    if(!drag.dir){ if(Math.abs(dx)<6) return; drag.dir=dx<0?1:-1; var k=drag.dir>0?passCur:passCur-1;
+      if(!els[k]||(drag.dir>0&&passCur>=n-1)){ drag.dir=2; return; } drag.bd=bend=makeBend(k); }
+    if(!drag.bd) return; var p=drag.dir>0?clamp(-dx/(w*.85),0,1):1-clamp(dx/(w*.85),0,1); setP(drag.bd,p); });
   function end(e){ if(!drag) return; var d=drag; drag=null; if(busy) return;
     if(!d.dir){ var r=pp.getBoundingClientRect(); if(Date.now()-d.t<400){ if(e.clientX>r.left+r.width*.5) flip(1); else flip(-1); } return; }
-    if(!d.el) return; var dx=e.clientX-d.x, v=dx/Math.max(1,Date.now()-d.t), go=Math.abs(dx)>(pp.clientWidth||1)*.28||Math.abs(v)>.45;
-    if(go&&(d.dir>0?dx<0:dx>0)) flip(d.dir,d.ang); else snapBack(d.el,d.dir>0?0:-180,d.k); }
-  pp.addEventListener("pointerup",end); pp.addEventListener("pointercancel",function(){ if(drag&&drag.el&&!busy) snapBack(drag.el,drag.dir>0?0:-180,drag.k); drag=null; });
+    if(!d.bd) return; var dx=e.clientX-d.x, v=dx/Math.max(1,Date.now()-d.t), go=Math.abs(dx)>(pp.clientWidth||1)*.25||Math.abs(v)>.45;
+    if(go&&(d.dir>0?dx<0:dx>0)) flip(d.dir,d.bd); else snapBack(d.bd,d.dir>0?0:1); }
+  pp.addEventListener("pointerup",end); pp.addEventListener("pointercancel",function(){ if(drag&&drag.bd&&!busy) snapBack(drag.bd,drag.dir>0?0:1); drag=null; });
   box.querySelector(".pprev").onclick=function(){ flip(-1); }; box.querySelector(".pnext").onclick=function(){ flip(1); };
   dots.onclick=function(e){ var d=e.target.closest("i"); if(!d||busy) return; var t=+d.dataset.k; if(t===passCur) return; if(Math.abs(t-passCur)===1) flip(t>passCur?1:-1); else { passCur=t; layout(); } };
   pp.onkeydown=function(e){ if(e.key==="ArrowRight"){ e.preventDefault(); flip(1); } if(e.key==="ArrowLeft"){ e.preventDefault(); flip(-1); } };
