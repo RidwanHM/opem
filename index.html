@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20g">
+<meta name="opem-build" content="2026-11-20h">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -416,7 +416,28 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .visit.show-stats .statsbox{display:grid}
 .visit.show-stats .vsum,.visit.show-stats .conts,.visit.show-stats #visitHint,.visit.show-stats #visitCard{display:none}
 .passwrap{display:none;order:3;flex-direction:column;gap:12px}
-.visit.show-pass .passwrap{display:flex}
+.passwrap.full{display:flex;position:fixed;inset:0;z-index:60;gap:0;padding:calc(8px + env(safe-area-inset-top,0px)) 14px calc(10px + env(safe-area-inset-bottom,0px));box-sizing:border-box;
+  background:radial-gradient(ellipse at 50% 30%,#1a2b4d,#0a1222 70%);animation:pfIn .28s ease-out}
+@keyframes pfIn{from{opacity:0;transform:scale(.97)}to{opacity:1;transform:none}}
+.pfhead{display:flex;align-items:center;justify-content:space-between;gap:10px;height:46px;flex:none;max-width:480px;width:100%;margin:0 auto}
+.pfhead b{font-family:var(--display);font-size:15px;letter-spacing:.06em}
+.pfhead button{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);display:grid;place-items:center;font-size:22px;line-height:1;color:var(--ink);background:rgba(255,255,255,.04)}
+.pfhead button svg{width:18px;height:18px}
+.passwrap.full .passbox{flex:1;min-height:0;gap:0}
+.passwrap.full .pbook{flex:1;min-height:0;max-width:480px;width:100%;margin:0 auto;gap:10px;padding-top:6px}
+.pstack{position:relative;flex:1;min-height:0;perspective:1800px;touch-action:none;user-select:none;-webkit-user-select:none}
+.pstack .ppage{position:absolute;inset:0;min-height:0;transform-origin:left center;backface-visibility:visible;-webkit-backface-visibility:visible;will-change:transform}
+.pstack .ppage.anim{transition:transform .5s cubic-bezier(.3,.7,.25,1),filter .5s}
+.pstack .ppage.back>*{visibility:hidden}
+.pstack .ppage.back{box-shadow:0 8px 22px rgba(0,0,0,.3)}
+.pstack .ppage .pshade{position:absolute;inset:0;pointer-events:none;background:linear-gradient(90deg,rgba(0,0,0,.35),rgba(0,0,0,0) 60%);opacity:0;visibility:visible}
+.passwrap.full .ppage.info dl{font-size:15px;gap:10px 16px;margin:16px 6px}
+.passwrap.full .ppage .ph{font-size:11px;margin:4px 0 14px}
+.passwrap.full .pgrid{gap:14px 14px;align-content:start}
+.passwrap.full .pstamp b{font-size:11.5px}.passwrap.full .pstamp .sf{font-size:22px}.passwrap.full .pstamp small{font-size:9.5px}
+.passwrap.full .pcov svg{width:96px;height:96px}.passwrap.full .pcov b{font-size:26px}
+.passwrap.full .passshare{position:absolute;left:10px;right:10px;bottom:calc(10px + env(safe-area-inset-bottom,0px));max-width:460px;margin:0 auto;max-height:72%;overflow-y:auto;z-index:5;background:#101a2e;box-shadow:0 -10px 40px rgba(0,0,0,.55)}
+.passwrap.full .passshare .pclose{position:sticky;top:0;align-self:flex-end;width:32px;height:32px;border-radius:50%;border:1px solid var(--line);font-size:18px;color:var(--ink);background:#101a2e;margin-bottom:-32px;z-index:1}
 .passbox{display:flex;flex-direction:column;gap:12px}
 .passshare{display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,178,62,.35);border-radius:14px;padding:10px;background:rgba(255,178,62,.05)}
 .passshare .actions{display:flex;gap:8px;flex-wrap:wrap}
@@ -2246,35 +2267,74 @@ function paperStamp(name,i){
   var c=countryByName(name), f=c&&c.f, h=hashStr(name), ink=PAPER_INKS[h%PAPER_INKS.length], shape=["round","rect","ticket","oval"][(h>>3)%4], rot=((h>>6)%19)-9, dx=((h>>11)%9)-4, dy=((h>>15)%9)-4;
   return '<div class="pstamp '+shape+'" style="--ink:'+ink+';--rot:'+rot+'deg;--dx:'+dx+'px;--dy:'+dy+'px"><span class="sf">'+(f?flagOf(f):"")+'</span><b>'+esc(name.toUpperCase())+'</b><small>'+(f?esc(CONTNAME[f.cont]||""):"")+'</small><i>&#9992; ENTRY</i></div>';
 }
+var passCur=0, passHome=null;
+function passPer(h,w){ var colW=(w-28-14)/2, rowH=colW*.84+16, rows=Math.floor((h-64)/rowH); return Math.max(2,Math.min(6,rows))*2; }
 function renderPass(){
   var box=document.getElementById("passBox"), list=visited.slice(), pc=passCounts(), known=countries.filter(function(c){ return c.f; }).length||195;
-  var pages=[], per=6;
-  pages.push('<div class="ppage cover"><div class="pcov"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="32" cy="32" rx="9" ry="22" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 32h44M14 21h36M14 43h36" fill="none" stroke="currentColor" stroke-width="1.4"/></svg><b>PASSPORT</b><small>OPEM · WORLD TRAVELLER</small><span>'+pc.n+" stamp"+(pc.n===1?"":"s")+"</span></div><em>Swipe to open &#8594;</em></div>");
-  pages.push('<div class="ppage info"><p class="ph">TRAVELLER</p><dl><dt>Countries</dt><dd>'+pc.n+"</dd><dt>Continents</dt><dd>"+pc.conts+" of 6</dd><dt>Of the world</dt><dd>"+Math.round(pc.n/known*100)+"%</dd>"+(list.length?"<dt>First stamp</dt><dd>"+esc(list[0])+"</dd><dt>Latest stamp</dt><dd>"+esc(list[list.length-1])+"</dd>":"")+'</dl><p class="mrz">P&lt;OPEM&lt;&lt;WORLD&lt;TRAVELLER&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>'+String(pc.n).padStart(3,"0")+"STAMPS&lt;&lt;"+String(pc.conts)+"CONT&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;</p><span class=\"pnum\">1</span></div>");
+  box.innerHTML='<div class="pbook"><div class="pstack" id="pPages" tabindex="0" aria-label="Passport pages. Swipe or use the arrows to turn the page."></div><div class="pnav"><button type="button" class="pprev" aria-label="Previous page">&#8249;</button><span class="pdots"></span><button type="button" class="pnext" aria-label="Next page">&#8250;</button></div></div>';
+  var pp=document.getElementById("pPages"), W=pp.clientWidth||340, H=pp.clientHeight||420, per=passPer(H,W), pages=[];
+  pages.push('<div class="ppage cover"><div class="pcov"><svg viewBox="0 0 64 64" aria-hidden="true"><circle cx="32" cy="32" r="22" fill="none" stroke="currentColor" stroke-width="2"/><ellipse cx="32" cy="32" rx="9" ry="22" fill="none" stroke="currentColor" stroke-width="1.6"/><path d="M10 32h44M14 21h36M14 43h36" fill="none" stroke="currentColor" stroke-width="1.6"/></svg><b>OPEM</b><small>PASSPORT · PASSEPORT · PASS</small><span>'+pc.n+" stamp"+(pc.n===1?"":"s")+'</span></div><em>Swipe to open &#8250;</em></div>');
+  pages.push('<div class="ppage info"><p class="ph">TRAVELLER</p><dl><dt>Countries</dt><dd>'+pc.n+"</dd><dt>Continents</dt><dd>"+pc.conts+" of 6</dd><dt>Of the world</dt><dd>"+Math.round(pc.n/known*100)+"%</dd>"+(list.length?"<dt>First stamp</dt><dd>"+esc(list[0])+"</dd><dt>Latest stamp</dt><dd>"+esc(list[list.length-1])+"</dd>":"")+'</dl><p class="mrz">P&lt;OPEM&lt;&lt;WORLD&lt;TRAVELLER&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;<br>'+String(pc.n).padStart(3,"0")+"STAMPS&lt;&lt;"+pc.conts+"CONT&lt;&lt;"+Math.round(pc.n/known*100)+'PCT&lt;&lt;&lt;&lt;&lt;&lt;</p><span class="pnum">1</span></div>');
   if(!list.length) pages.push('<div class="ppage"><p class="ph">ENTRIES · STAMPS</p><p class="pempty">No stamps yet. Mark a country as visited and it gets stamped here.</p><span class="pnum">2</span></div>');
-  for(var i=0;i<list.length;i+=per){ pages.push('<div class="ppage"><p class="ph">ENTRIES · STAMPS</p><div class="pgrid">'+list.slice(i,i+per).map(paperStamp).join("")+'</div><span class="pnum">'+(pages.length)+"</span></div>"); }
-  box.innerHTML='<div class="pbook"><div class="ppages" id="pPages">'+pages.join("")+'</div><div class="pnav"><button type="button" class="pprev" aria-label="Previous page">&#8249;</button><span class="pdots"></span><button type="button" class="pnext" aria-label="Next page">&#8250;</button></div></div>';
-  var pp=document.getElementById("pPages"), els=[].slice.call(pp.children), dots=box.querySelector(".pdots");
+  for(var i=0;i<list.length;i+=per){ pages.push('<div class="ppage"><p class="ph">ENTRIES · STAMPS</p><div class="pgrid">'+list.slice(i,i+per).map(paperStamp).join("")+'</div><span class="pnum">'+pages.length+"</span></div>"); }
+  pp.innerHTML=pages.join("");
+  var els=[].slice.call(pp.children), n=els.length, dots=box.querySelector(".pdots");
+  els.forEach(function(el){ var sh=document.createElement("i"); sh.className="pshade"; el.appendChild(sh); });
+  passCur=clamp(passCur,0,n-1);
   dots.innerHTML=els.map(function(_,k){ return '<i data-k="'+k+'"></i>'; }).join("");
-  function cur(){ return Math.round(pp.scrollLeft/Math.max(1,pp.clientWidth)); }
-  function turn(){ var w=pp.clientWidth||1, sl=pp.scrollLeft, c=cur();
-    els.forEach(function(el,k){ var off=(el.offsetLeft-sl)/w, a=clamp(off,-1,1);
-      el.style.transformOrigin=a<0?"right center":"left center"; el.style.transform="rotateY("+(a*-38).toFixed(2)+"deg) scale("+(1-Math.abs(a)*.06).toFixed(3)+")"; el.style.filter="brightness("+(1-Math.abs(a)*.28).toFixed(2)+")"; });
-    [].forEach.call(dots.children,function(d,k){ d.classList.toggle("on",k===c); });
-    box.querySelector(".pprev").disabled=c<=0; box.querySelector(".pnext").disabled=c>=els.length-1; }
-  function go(k){ pp.scrollTo({left:k*pp.clientWidth,behavior:reduce?"auto":"smooth"}); }
-  pp.addEventListener("scroll",function(){ requestAnimationFrame(turn); },{passive:true});
-  box.querySelector(".pprev").onclick=function(){ go(cur()-1); }; box.querySelector(".pnext").onclick=function(){ go(cur()+1); };
-  dots.onclick=function(e){ var d=e.target.closest("i"); if(d) go(+d.dataset.k); };
-  pp.addEventListener("keydown",function(e){ if(e.key==="ArrowRight"){ e.preventDefault(); go(cur()+1); } if(e.key==="ArrowLeft"){ e.preventDefault(); go(cur()-1); } }); pp.tabIndex=0;
-  requestAnimationFrame(turn);
+  function setAng(el,deg){ el.style.transform="rotateY("+deg.toFixed(2)+"deg)"; el.classList.toggle("back",deg<-90); var sh=el.querySelector(".pshade"); if(sh) sh.style.opacity=String(Math.min(1,Math.abs(deg)/120)); }
+  function under(k,t){ if(els[k]) els[k].style.filter="brightness("+(0.72+0.28*t).toFixed(3)+")"; }
+  function layout(){
+    els.forEach(function(el,k){ el.classList.remove("anim"); el.style.filter=""; if(k<passCur){ setAng(el,-180); el.style.zIndex=k; el.style.visibility="hidden"; } else { setAng(el,0); el.style.zIndex=n-k+n; el.style.visibility=""; } });
+    [].forEach.call(dots.children,function(d,k){ d.classList.toggle("on",k===passCur); });
+    box.querySelector(".pprev").disabled=passCur<=0; box.querySelector(".pnext").disabled=passCur>=n-1;
+  }
+  var busy=false;
+  function flip(dir,from){ // dir 1 = next, -1 = previous; from = current angle when dragging
+    if(busy) return; var k=dir>0?passCur:passCur-1, el=els[k]; if(!el||(dir>0&&passCur>=n-1)) return;
+    busy=true; el.style.visibility=""; el.style.zIndex=3*n; if(from==null) setAng(el,dir>0?0:-180);
+    void el.offsetWidth; el.classList.add("anim"); if(els[k+1]) els[k+1].classList.add("anim");
+    var end=dir>0?-180:0, done=false; setAng(el,end); under(k+1,dir>0?1:0);
+    if(reduce){ el.classList.remove("anim"); }
+    if(navigator.vibrate) try{ navigator.vibrate(8); }catch(e){}
+    function fin(){ if(done) return; done=true; passCur+=dir; busy=false; layout(); }
+    el.addEventListener("transitionend",fin,{once:true}); setTimeout(fin,reduce?0:620);
+  }
+  function snapBack(el,deg,k){ busy=true; el.classList.add("anim"); if(els[k+1]) els[k+1].classList.add("anim"); setAng(el,deg); under(k+1,deg===0?1:0); setTimeout(function(){ busy=false; layout(); },560); }
+  // drag the page with a finger, like turning a real page
+  var drag=null;
+  pp.addEventListener("pointerdown",function(e){ if(busy) return; drag={x:e.clientX,y:e.clientY,t:Date.now(),el:null,k:-1,dir:0,ang:0}; try{ pp.setPointerCapture(e.pointerId); }catch(_){} });
+  pp.addEventListener("pointermove",function(e){ if(!drag||busy) return; var dx=e.clientX-drag.x, w=pp.clientWidth||1;
+    if(!drag.dir){ if(Math.abs(dx)<6) return; drag.dir=dx<0?1:-1; drag.k=drag.dir>0?passCur:passCur-1; drag.el=els[drag.k];
+      if(!drag.el||(drag.dir>0&&passCur>=n-1)){ drag.el=null; return; } drag.el.style.visibility=""; drag.el.style.zIndex=3*n; }
+    if(!drag.el) return; var f=drag.dir>0?clamp(-dx/w,0,1):1-clamp(dx/w,0,1); drag.ang=-180*f; setAng(drag.el,drag.ang); under(drag.k+1,1-f); });
+  function end(e){ if(!drag) return; var d=drag; drag=null; if(busy) return;
+    if(!d.dir){ var r=pp.getBoundingClientRect(); if(Date.now()-d.t<400){ if(e.clientX>r.left+r.width*.5) flip(1); else flip(-1); } return; }
+    if(!d.el) return; var dx=e.clientX-d.x, v=dx/Math.max(1,Date.now()-d.t), go=Math.abs(dx)>(pp.clientWidth||1)*.28||Math.abs(v)>.45;
+    if(go&&(d.dir>0?dx<0:dx>0)) flip(d.dir,d.ang); else snapBack(d.el,d.dir>0?0:-180,d.k); }
+  pp.addEventListener("pointerup",end); pp.addEventListener("pointercancel",function(){ if(drag&&drag.el&&!busy) snapBack(drag.el,drag.dir>0?0:-180,drag.k); drag=null; });
+  box.querySelector(".pprev").onclick=function(){ flip(-1); }; box.querySelector(".pnext").onclick=function(){ flip(1); };
+  dots.onclick=function(e){ var d=e.target.closest("i"); if(!d||busy) return; var t=+d.dataset.k; if(t===passCur) return; if(Math.abs(t-passCur)===1) flip(t>passCur?1:-1); else { passCur=t; layout(); } };
+  pp.onkeydown=function(e){ if(e.key==="ArrowRight"){ e.preventDefault(); flip(1); } if(e.key==="ArrowLeft"){ e.preventDefault(); flip(-1); } };
+  layout();
 }
 function setPass(on){
+  var wrap=document.getElementById("passWrap");
   visitEl.classList.toggle("show-pass",!!on); document.getElementById("passBtn").setAttribute("aria-expanded",String(!!on));
   var po=document.getElementById("passOpen"); if(po) po.textContent=on?"Close":"Open";
-  if(!on){ var so=document.getElementById("passShareOut"); if(so){ so.hidden=true; so.innerHTML=""; } }
-  if(on){ setStats(false); setList(false); renderPass(); visitEl.scrollTop=0; }
+  if(!on){ var so=document.getElementById("passShareOut"); if(so){ so.hidden=true; so.innerHTML=""; }
+    wrap.classList.remove("full"); if(passHome&&wrap.parentNode!==passHome.p) passHome.p.insertBefore(wrap,passHome.n); document.body.classList.remove("passfull"); return; }
+  setStats(false); setList(false);
+  if(!passHome) passHome={p:wrap.parentNode,n:wrap.nextSibling};
+  if(!document.getElementById("pfHead")){ var h=document.createElement("div"); h.className="pfhead"; h.id="pfHead";
+    h.innerHTML='<button type="button" id="pfClose" aria-label="Close passport">&times;</button><b>My passport</b><button type="button" id="pfShare" aria-label="Share passport"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12M7 8l5-5 5 5M5 13v6a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-6"/></svg></button>';
+    wrap.insertBefore(h,wrap.firstChild);
+    h.querySelector("#pfClose").onclick=function(){ setPass(false); }; h.querySelector("#pfShare").onclick=function(){ passShareMenu(); }; }
+  document.body.appendChild(wrap); wrap.classList.add("full"); document.body.classList.add("passfull"); passCur=0;
+  requestAnimationFrame(renderPass);
 }
+window.addEventListener("resize",function(){ var w=document.getElementById("passWrap"); if(w&&w.classList.contains("full")) renderPass(); });
+document.addEventListener("keydown",function(e){ var w=document.getElementById("passWrap"); if(e.key==="Escape"&&w&&w.classList.contains("full")) setPass(false); });
 function syncPassBtn(){ var b=document.getElementById("passBtn"); if(b) b.textContent="Passport · "+visited.length; if(visitEl.classList.contains("show-pass")) renderPass(); if(typeof renderPassBanner==="function") renderPassBanner(); }
 function stampFx(name){
   var card=document.getElementById("visitCard"); if(!card||card.hidden) return;
@@ -2298,6 +2358,8 @@ document.getElementById("passOpen").addEventListener("click",function(){ setPass
 document.getElementById("passShare").addEventListener("click",function(){ if(!visitEl.classList.contains("show-pass")) setPass(true); passShareMenu(); });
 function passShareMenu(){
   var o=document.getElementById("passShareOut"); o.hidden=false;
+  if(!o._obs&&window.MutationObserver){ var addX=function(){ if(o.hidden||o.querySelector(".pclose")) return; var x=document.createElement("button"); x.type="button"; x.className="pclose"; x.setAttribute("aria-label","Close sharing"); x.innerHTML="&times;"; x.onclick=function(){ o.hidden=true; o.innerHTML=""; }; o.insertBefore(x,o.firstChild); };
+    o._obs=new MutationObserver(addX); o._obs.observe(o,{childList:true}); setTimeout(addX,0); }
   o.innerHTML='<p class="passhead">Share your passport</p><div class="actions"><button class="btn primary" type="button" id="psVid">Video</button><button class="btn" type="button" id="psPic">Picture</button></div>';
   document.getElementById("psVid").onclick=passVideo; document.getElementById("psPic").onclick=passPicture; o.scrollIntoView({block:"nearest"});
 }
