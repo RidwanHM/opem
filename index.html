@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta name="opem-build" content="2026-11-20c">
+<meta name="opem-build" content="2026-11-20d">
 <meta name="theme-color" content="#060913">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="icon-180.png">
@@ -415,8 +415,34 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
 .statsbox{display:none;order:3;grid-template-columns:1fr 1fr;gap:8px}
 .visit.show-stats .statsbox{display:grid}
 .visit.show-stats .vsum,.visit.show-stats .conts,.visit.show-stats #visitHint,.visit.show-stats #visitCard{display:none}
-.passbox{display:none;order:3;flex-direction:column;gap:12px}
-.visit.show-pass .passbox{display:flex}
+.passwrap{display:none;order:3;flex-direction:column;gap:12px}
+.visit.show-pass .passwrap{display:flex}
+.passbox{display:flex;flex-direction:column;gap:12px}
+.passshare{display:flex;flex-direction:column;gap:8px;border:1px solid rgba(255,178,62,.35);border-radius:14px;padding:10px;background:rgba(255,178,62,.05)}
+.passshare .actions{display:flex;gap:8px;flex-wrap:wrap}
+.passshare .jpic,.passshare .jvid{width:100%;max-width:260px;border-radius:12px;align-self:center}
+#passBtn{display:none}
+.passbanner{order:2;display:flex;align-items:center;gap:10px;padding:10px 10px 10px 12px;border-radius:18px;border:1px solid rgba(255,178,62,.4);
+  background:linear-gradient(135deg,rgba(255,178,62,.14),rgba(255,178,62,.03) 60%),repeating-linear-gradient(0deg,rgba(255,255,255,.02) 0 14px,transparent 14px 15px)}
+.visit.show-pass .passbanner{border-color:var(--accent)}
+.pbstack{position:relative;width:70px;height:58px;flex:none}
+.pbstack>span{position:absolute;left:calc(var(--i) * 10px);top:calc(var(--i) * 2px);width:50px;transform:rotate(calc(var(--i) * 9deg - 6deg));z-index:calc(3 - var(--i))}
+.pbstack .stamp{padding:3px;box-shadow:0 4px 10px rgba(0,0,0,.4),inset 0 0 0 2px rgba(6,9,19,.9),inset 0 0 0 3px var(--ink);background:#0c1323}
+.pbstack .stamp.ticket{box-shadow:0 4px 10px rgba(0,0,0,.4)}
+.pbstack .stamp .sf{font-size:14px}
+.pbstack .stamp b{font-size:6px}
+.pbstack .stamp small,.pbstack .stamp i{display:none}
+.pbt{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.pbt b{font-family:var(--display);font-size:15px;white-space:nowrap}
+.pbt small{color:var(--muted);font-size:12px;line-height:1.3}
+.pbacts{display:flex;gap:6px;align-items:center}
+.pbacts .btn{margin:0;padding:7px 13px;font-size:13.5px}
+.pbshare{width:38px;height:38px;padding:0 !important;display:grid;place-items:center}
+.pbshare svg{width:18px;height:18px}
+.contstamps{order:2}
+.contstamps .passhead{margin-bottom:6px}
+.cstrip{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 6px;scroll-snap-type:x proximity}
+.cstrip .stamp{width:84px;flex:none;scroll-snap-align:start}
 .visit.show-pass .vsum,.visit.show-pass .conts,.visit.show-pass #visitHint,.visit.show-pass #visitCard{display:none}
 .passbtn[aria-expanded="true"],#statsBtn[aria-expanded="true"],#listBtn[aria-expanded="true"]{border-color:rgba(255,178,62,.6);color:var(--accent)}
 .passhead{margin:0;font-size:13px;color:var(--muted)}
@@ -666,7 +692,7 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
         <div class="sugg-list" id="countryMatches"></div>
         <div class="vbtns"><button class="listbtn" type="button" id="listBtn" aria-expanded="false" aria-controls="visitedChips"></button><button class="listbtn" type="button" id="statsBtn" aria-expanded="false" aria-controls="statsBox">My stats</button><button class="listbtn passbtn" type="button" id="passBtn" aria-expanded="false" aria-controls="passBox">Passport</button></div>
         <div class="statsbox" id="statsBox"></div>
-        <div class="passbox" id="passBox"></div>
+        <div class="passwrap" id="passWrap"><div class="passbox" id="passBox"></div><div class="passshare" id="passShareOut" hidden></div></div>
       </div>
       <div class="stack" id="journeyBox">
         <form class="opbar" id="jBar" autocomplete="off">
@@ -686,6 +712,12 @@ a.btn{display:inline-flex;align-items:center;justify-content:center;text-decorat
       <button class="pill backworld" type="button" id="visitBack" hidden>&#8592; My world</button>
       <button class="x" type="button" id="visitClose" aria-label="Close my world">&times;</button></div>
     <div class="fcard" id="visitCard" hidden></div>
+    <div class="passbanner" id="passBanner">
+      <div class="pbstack" aria-hidden="true"></div>
+      <div class="pbt"><b>My passport</b><small></small></div>
+      <div class="pbacts"><button class="btn primary" type="button" id="passOpen">Open</button><button class="btn pbshare" type="button" id="passShare" aria-label="Share your passport"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 15V4M7.5 8.5 12 4l4.5 4.5M5 13v5.5A1.5 1.5 0 0 0 6.5 20h11a1.5 1.5 0 0 0 1.5-1.5V13" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></button></div>
+    </div>
+    <div class="contstamps" id="contStamps" hidden></div>
     <div class="vsum">
       <svg viewBox="0 0 64 64" width="64" height="64" aria-hidden="true"><circle cx="32" cy="32" r="26" fill="none" stroke="rgba(255,255,255,.14)" stroke-width="9"/><circle id="vRing" cx="32" cy="32" r="26" fill="none" stroke="#ffb23e" stroke-width="9" stroke-dasharray="0 163.4" transform="rotate(-90 32 32)"/></svg>
       <div><b id="vPct">0%</b><small id="vPctLbl">of the world</small></div>
@@ -1369,6 +1401,16 @@ function render(){
     }
     if(vSel.country){ var sc=countryByName(vSel.country); if(sc){ ctx.beginPath(); path(sc.geom); ctx.strokeStyle="#ffffff"; ctx.lineWidth=1.8; ctx.stroke(); } }
     ctx.globalAlpha=1;
+    // stamps on the visited countries (bigger while the passport is open)
+    if(visGeo.length&&worldA*vt>.3){
+      var big=visitEl.classList.contains("show-pass"), sz=big?26:17, placed=[];
+      countries.forEach(function(cc){ if(visited.indexOf(cc.name)<0) return; if(!cc._cen) cc._cen=d3.geoCentroid(cc.geom); if(!front(cc._cen)) return;
+        var pp=proj(cc._cen); if(pp[0]<0||pp[0]>W||pp[1]<0||pp[1]>H) return;
+        for(var q=0;q<placed.length;q++){ var dx=placed[q][0]-pp[0], dy=placed[q][1]-pp[1]; if(dx*dx+dy*dy<sz*sz*1.1) return; }
+        placed.push(pp); drawStamp(ctx,cc.name,pp[0],pp[1],sz,{mini:true,alpha:worldA*vt}); });
+      ctx.globalAlpha=1;
+    }
+
   }
   if(localA>0){
     ctx.globalAlpha=localA;
@@ -1985,6 +2027,7 @@ function runVisitAnim(home){
 }
 var visitEl=document.getElementById("visit"), visitBtn=document.getElementById("visitBtn"), visitCard=document.getElementById("visitCard");
 visitEl.insertBefore(document.getElementById("visitedBox"),document.getElementById("visitCard"));
+(function(){ var vb=document.getElementById("visitedBox"), sb=document.getElementById("statsBox"); vb.insertBefore(document.getElementById("passBanner"),sb); vb.insertBefore(document.getElementById("contStamps"),sb); })();
 function flagOf(f){ try{ return String.fromCodePoint(127397+f.iso2.charCodeAt(0),127397+f.iso2.charCodeAt(1)); }catch(e){ return ""; } }
 function popText(m){ return m>=1?(m>=100?Math.round(m):Math.round(m*10)/10)+" million":kr(Math.round(m*1e6/1000)*1000); }
 function setVisit(on,home){
@@ -2020,6 +2063,7 @@ function syncVisit(){
     box.appendChild(b);
   });
   if(vSel.country){ var c=countryByName(vSel.country); if(c) drawCard(c); }
+  if(typeof renderPassBanner==="function") renderPassBanner();
 }
 function drawCard(c){
   var f=c.f, on=visited.indexOf(c.name)>=0;
@@ -2167,9 +2211,12 @@ function renderPass(){
 }
 function setPass(on){
   visitEl.classList.toggle("show-pass",!!on); document.getElementById("passBtn").setAttribute("aria-expanded",String(!!on));
+  var po=document.getElementById("passOpen"); if(po) po.textContent=on?"Close":"Open";
+  if(!on){ var so=document.getElementById("passShareOut"); if(so){ so.hidden=true; so.innerHTML=""; } }
+  draw();
   if(on){ setStats(false); setList(false); renderPass(); visitEl.scrollTop=0; }
 }
-function syncPassBtn(){ var b=document.getElementById("passBtn"); if(b) b.textContent="Passport · "+visited.length; if(visitEl.classList.contains("show-pass")) renderPass(); }
+function syncPassBtn(){ var b=document.getElementById("passBtn"); if(b) b.textContent="Passport · "+visited.length; if(visitEl.classList.contains("show-pass")) renderPass(); if(typeof renderPassBanner==="function") renderPassBanner(); }
 function stampFx(name){
   var card=document.getElementById("visitCard"); if(!card||card.hidden) return;
   var w=document.createElement("div"); w.className="stampfx"; w.innerHTML=stampHtml(name,true); card.appendChild(w);
@@ -2177,6 +2224,100 @@ function stampFx(name){
   setTimeout(function(){ w.classList.add("out"); },1300); setTimeout(function(){ w.remove(); },1800);
 }
 document.getElementById("passBtn").addEventListener("click",function(){ setPass(!visitEl.classList.contains("show-pass")); });
+/* ---- passport, part 2: banner, continent stamps, stamps on the globe, sharing ---- */
+function passCounts(){ var cs={}; visited.forEach(function(n){ var c=countryByName(n); if(c&&c.f) cs[c.f.cont]=1; }); return {n:visited.length,conts:Object.keys(cs).length}; }
+function renderPassBanner(){
+  var b=document.getElementById("passBanner"); if(!b) return; var pc=passCounts(), last=visited.slice(-3).reverse();
+  b.querySelector(".pbstack").innerHTML=last.length?last.map(function(n,i){ return '<span style="--i:'+i+'">'+stampHtml(n)+"</span>"; }).join(""):'<span style="--i:0"><div class="stamp round" style="--ink:#5b6b82;--rot:-6deg"><span class="sf">🌍</span><b>YOUR FIRST</b><i>STAMP</i></div></span>';
+  b.querySelector(".pbt b").textContent="My passport";
+  b.querySelector(".pbt small").textContent=pc.n?pc.n+" stamp"+(pc.n>1?"s":"")+" · "+pc.conts+" continent"+(pc.conts>1?"s":""):"Mark countries as visited to collect stamps";
+  var cs=document.getElementById("contStamps"), sc=vSel.cont;
+  if(cs){ var list=sc?visited.filter(function(n){ var c=countryByName(n); return c&&c.f&&c.f.cont===sc; }).sort():[];
+    cs.hidden=!sc; cs.innerHTML=sc?(list.length?'<p class="passhead">Your '+esc(CONTNAME[sc])+" stamps</p><div class=\"cstrip\">"+list.map(function(n){ return stampHtml(n); }).join("")+"</div>":'<p class="passhead">No stamps from '+esc(CONTNAME[sc])+" yet. Tap a country to add it.</p>"):""; }
+}
+document.getElementById("passOpen").addEventListener("click",function(){ setPass(!visitEl.classList.contains("show-pass")); });
+document.getElementById("passShare").addEventListener("click",function(){ if(!visitEl.classList.contains("show-pass")) setPass(true); passShareMenu(); });
+function passShareMenu(){
+  var o=document.getElementById("passShareOut"); o.hidden=false;
+  o.innerHTML='<p class="passhead">Share your passport</p><div class="actions"><button class="btn primary" type="button" id="psVid">Video</button><button class="btn" type="button" id="psPic">Picture</button></div>';
+  document.getElementById("psVid").onclick=passVideo; document.getElementById("psPic").onclick=passPicture; o.scrollIntoView({block:"nearest"});
+}
+// ---- drawing a stamp on a canvas (for the globe, the picture and the video)
+function rr(g,x,y,w,h,r){ g.beginPath(); g.moveTo(x+r,y); g.arcTo(x+w,y,x+w,y+h,r); g.arcTo(x+w,y+h,x,y+h,r); g.arcTo(x,y+h,x,y,r); g.arcTo(x,y,x+w,y,r); g.closePath(); }
+function drawStamp(g,name,cx,cy,s,opts){
+  opts=opts||{}; var c=countryByName(name), f=c&&c.f, h=hashStr(name), ink=INKS[h%INKS.length], shape=["round","rect","ticket"][(h>>3)%3], rot=(((h>>6)%17)-8)*Math.PI/180;
+  g.save(); g.translate(cx,cy); g.rotate(rot+(opts.spin||0)); var k=opts.scale||1; g.scale(k,k); g.globalAlpha=(opts.alpha==null?1:opts.alpha)*.95;
+  g.fillStyle="rgba(8,12,24,.92)"; g.strokeStyle=ink; g.lineWidth=Math.max(1.5,s*.035);
+  if(shape==="round"){ g.beginPath(); g.arc(0,0,s/2,0,6.3); g.fill(); g.stroke(); if(!opts.mini){ g.beginPath(); g.arc(0,0,s/2-s*.07,0,6.3); g.lineWidth=Math.max(1,s*.015); g.stroke(); } }
+  else if(shape==="rect"){ rr(g,-s*.55,-s*.47,s*1.1,s*.94,s*.08); g.fill(); g.stroke(); if(!opts.mini){ rr(g,-s*.48,-s*.4,s*.96,s*.8,s*.05); g.lineWidth=Math.max(1,s*.015); g.stroke(); } }
+  else { g.setLineDash([s*.07,s*.05]); rr(g,-s*.55,-s*.45,s*1.1,s*.9,s*.16); g.fill(); g.stroke(); g.setLineDash([]); }
+  g.textAlign="center"; g.textBaseline="middle";
+  if(f){ g.font=Math.round(s*(opts.mini?.5:.26))+"px system-ui, 'Apple Color Emoji', 'Segoe UI Emoji', sans-serif"; g.fillText(flagOf(f),0,opts.mini?0:-s*.2); }
+  if(!opts.mini){
+    g.fillStyle=ink; var nm=name.toUpperCase(), fs=s*.12; g.font="800 "+fs+"px Unbounded, Figtree, system-ui, sans-serif"; while(g.measureText(nm).width>s*.86&&fs>s*.07){ fs-=1; g.font="800 "+fs+"px Unbounded, Figtree, system-ui, sans-serif"; }
+    g.fillText(nm,0,s*.06); g.font="600 "+(s*.075)+"px Figtree, system-ui, sans-serif"; g.globalAlpha*=.8; g.fillText(f?(CONTNAME[f.cont]||""):"",0,s*.19);
+    g.font="800 "+(s*.07)+"px Figtree, system-ui, sans-serif"; g.fillText("V I S I T E D",0,s*.31);
+  }
+  g.restore();
+}
+// ---- the share picture and video (vertical, 9:16)
+function passFrame(g,W,H,t,total){
+  var bg=g.createLinearGradient(0,0,0,H); bg.addColorStop(0,"#0b1630"); bg.addColorStop(1,"#060913"); g.fillStyle=bg; g.fillRect(0,0,W,H);
+  var hs=hashStr("stars"); g.fillStyle="#fff"; for(var i=0;i<90;i++){ hs=Math.imul(hs^(hs>>>13),1274126177)>>>0; var x=(hs%1000)/1000*W; hs=Math.imul(hs^(hs>>>11),2246822519)>>>0; var y=(hs%1000)/1000*H; g.globalAlpha=.15+((hs>>5)%60)/100; g.fillRect(x,y,1.6,1.6); } g.globalAlpha=1;
+  var u=W/720, list=visited.slice(), n=list.length, cols=n>12?4:3, cell=Math.floor((W-80*u)/cols), maxRows=Math.floor((H-560*u)/(cell*.98)), show=list.slice(0,cols*maxRows), more=n-show.length;
+  g.textAlign="left"; g.textBaseline="alphabetic";
+  g.fillStyle="#ffb23e"; g.beginPath(); g.arc(58*u,92*u,13*u,0,6.3); g.fill();
+  g.fillStyle="#eef3f8"; g.font="800 "+(40*u)+"px Unbounded, Figtree, system-ui, sans-serif"; g.fillText("Opem",82*u,106*u);
+  g.fillStyle="#9fb2c6"; g.font="700 "+(22*u)+"px Figtree, system-ui, sans-serif"; g.fillText("MY TRAVEL PASSPORT",44*u,170*u);
+  var shown=total?Math.min(show.length,Math.floor(Math.max(0,t-900)/260)+ (t>900?1:0)):show.length, cnt=total?Math.min(n,Math.round(n*shown/Math.max(1,show.length))):n;
+  var pc=passCounts(), known=countries.filter(function(c){ return c.f; }).length||195, pct=Math.round(cnt/known*100);
+  g.fillStyle="#ffb23e"; g.font="800 "+(96*u)+"px Unbounded, Figtree, system-ui, sans-serif"; g.fillText(String(cnt),44*u,290*u);
+  var w1=g.measureText(String(cnt)).width; g.fillStyle="#eef3f8"; g.font="700 "+(30*u)+"px Figtree, system-ui, sans-serif"; g.fillText(cnt===1?"country":"countries",44*u+w1+16*u,286*u);
+  g.fillStyle="#9fb2c6"; g.font="600 "+(26*u)+"px Figtree, system-ui, sans-serif"; g.fillText(pct+"% of the world · "+pc.conts+" continent"+(pc.conts===1?"":"s"),44*u,336*u);
+  g.strokeStyle="rgba(255,255,255,.12)"; g.lineWidth=2*u; g.beginPath(); g.moveTo(44*u,372*u); g.lineTo(W-44*u,372*u); g.stroke();
+  var top=410*u;
+  show.forEach(function(name,i){ if(i>=shown) return; var r=Math.floor(i/cols), col=i%cols, cx=40*u+cell*col+cell/2, cy=top+cell*.98*r+cell/2;
+    var age=total?t-(900+i*260):9999, k=age<0?0:age<220?1.9-0.9*(age/220):age<300?1-.04*Math.sin((age-220)/80*Math.PI):1, a=age<0?0:Math.min(1,age/120);
+    drawStamp(g,name,cx,cy,cell*.78,{scale:k,alpha:a}); });
+  if(more>0&&(!total||shown>=show.length)){ g.fillStyle="#9fb2c6"; g.font="700 "+(26*u)+"px Figtree, system-ui, sans-serif"; g.textAlign="center"; g.fillText("+ "+more+" more stamps",W/2,H-150*u); }
+  g.textAlign="center"; g.fillStyle="rgba(238,243,248,.7)"; g.font="600 "+(22*u)+"px Figtree, system-ui, sans-serif"; g.fillText("Collect yours at opem-six.vercel.app",W/2,H-70*u);
+}
+function passPicture(){
+  var o=document.getElementById("passShareOut"), c=document.createElement("canvas"); c.width=1080; c.height=1920; passFrame(c.getContext("2d"),1080,1920,0,0);
+  var data; try{ data=c.toDataURL("image/png"); }catch(e){ o.innerHTML='<p class="note">The picture could not be made in this browser.</p>'; return; }
+  o.innerHTML='<img class="jpic" alt="Picture of your travel passport" src="'+data+'"><div class="actions"><button class="btn primary" type="button" id="psPicShare" hidden>Share picture</button><a class="btn" download="opem-passport.png" href="'+data+'">Download</a></div><p class="note" id="psHint">Download it and post it, or share it straight from your phone.</p>';
+  try{ c.toBlob(function(b){ if(!b) return; var f=new File([b],"opem-passport.png",{type:"image/png"}), btn=document.getElementById("psPicShare");
+    if(btn&&navigator.canShare&&navigator.canShare({files:[f]})){ btn.hidden=false; btn.onclick=function(){ navigator.share({files:[f],title:"My Opem passport"}).catch(function(){}); }; document.getElementById("psHint").textContent="Share picture opens your phone's share menu: Instagram, Snapchat, TikTok, messages."; } },"image/png"); }catch(e){}
+}
+var passVidBusy=false;
+function passVideo(){
+  if(passVidBusy) return; var o=document.getElementById("passShareOut");
+  var types=["video/mp4;codecs=avc1.42E01E","video/mp4","video/webm;codecs=vp9","video/webm"], mime="";
+  if(!window.MediaRecorder||!HTMLCanvasElement.prototype.captureStream){ o.innerHTML='<p class="note">This browser cannot record video. Try the picture instead.</p>'; return; }
+  types.some(function(t){ try{ if(MediaRecorder.isTypeSupported(t)){ mime=t; return true; } }catch(e){} return false; });
+  if(!mime){ o.innerHTML='<p class="note">This browser cannot record video. Try the picture instead.</p>'; return; }
+  var W=720,H=1280, n=Math.min(visited.length,24), total=900+n*260+2400;
+  o.innerHTML='<p class="note" id="psMsg" aria-live="polite">Making your video…</p><div class="vwrap" id="psWrap"></div><div class="actions" id="psActs" hidden><button class="btn primary" type="button" id="psVShare" hidden>Share video</button><a class="btn" id="psVSave">Download</a></div><p class="note" id="psVHint" hidden></p>';
+  var c=document.createElement("canvas"); c.width=W; c.height=H; c.className="jvid"; document.getElementById("psWrap").appendChild(c);
+  var g=c.getContext("2d"), chunks=[], rec, stream, msg=document.getElementById("psMsg"); passFrame(g,W,H,0,total);
+  try{ stream=c.captureStream(30); rec=new MediaRecorder(stream,{mimeType:mime,videoBitsPerSecond:5000000}); }catch(e){ msg.textContent="The video could not be recorded in this browser."; return; }
+  passVidBusy=true; rec.ondataavailable=function(ev){ if(ev.data&&ev.data.size) chunks.push(ev.data); };
+  rec.onstop=function(){ passVidBusy=false; stream.getTracks().forEach(function(t){ t.stop(); });
+    var mp4=mime.indexOf("mp4")>=0, type=mp4?"video/mp4":"video/webm", blob=new Blob(chunks,{type:type}), name="opem-passport"+(mp4?".mp4":".webm");
+    if(!document.getElementById("psWrap")||!blob.size){ if(msg.isConnected) msg.textContent="The video could not be recorded in this browser."; return; }
+    var url=URL.createObjectURL(blob), v=document.createElement("video"); v.src=url; v.controls=true; v.playsInline=true; v.muted=true; v.loop=true; v.className="jvid";
+    var wrap=document.getElementById("psWrap"); wrap.innerHTML=""; wrap.appendChild(v); msg.textContent="Your passport video is ready ("+Math.round(total/1000)+" seconds, vertical).";
+    document.getElementById("psActs").hidden=false; var sv=document.getElementById("psVSave"); sv.href=url; sv.setAttribute("download",name);
+    var f=null, sb=document.getElementById("psVShare"), hint=document.getElementById("psVHint"); try{ f=new File([blob],name,{type:type}); }catch(e){}
+    if(f&&navigator.canShare&&navigator.canShare({files:[f]})){ sb.hidden=false; sb.onclick=function(){ navigator.share({files:[f],title:"My Opem passport"}).catch(function(){}); }; hint.textContent="Share video opens your phone's share menu. Pick Instagram, Snapchat or TikTok there."; }
+    else hint.textContent="Download it and post it from your camera roll."+(mp4?"":" The file is WebM, which Instagram may not accept.");
+    hint.hidden=false; };
+  rec.start(250); var t0=performance.now();
+  (function tick(now){ var T=now-t0; if(!c.isConnected){ try{ rec.stop(); }catch(e){} passVidBusy=false; return; }
+    passFrame(g,W,H,Math.min(T,total),total); msg.textContent="Making your video… "+Math.min(99,Math.round(T/total*100))+"%. Keep this open.";
+    if(T<total+150) requestAnimationFrame(tick); else { try{ rec.stop(); }catch(e){ passVidBusy=false; } } })(t0);
+}
+
 countryInput.addEventListener("input",showMatches);
 var opemReply=document.getElementById("opemReply"), opemGo=document.getElementById("opemGo"), opemBusy=false;
 var DESTISO={phuket:"THA",barcelona:"ESP",oslo:"NOR",bali:"IDN",zanzibar:"TZA",marrakech:"MAR",dubai:"ARE"};
